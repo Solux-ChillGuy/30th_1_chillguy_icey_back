@@ -17,13 +17,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.client.RestTemplate;
 
 import javax.crypto.SecretKey;
 import java.security.Key;
@@ -71,16 +66,20 @@ public class TokenService {
      * Access Token 생성
      */
     public String createAccessToken(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_USER_EXCEPTION, "사용자를 찾을 수 없습니다."));
         Date expirationTime = new Date(System.currentTimeMillis() + accessTokenValidityTime);
 
         return Jwts.builder()
                 .subject(ACCESS_TOKEN_SUBJECT)
-                .claim(EMAIL_CLAIM, email)
+                .claim(EMAIL_CLAIM, user.getEmail())
+                .claim("userId", user.getId())
                 .issuedAt(new Date())
                 .expiration(expirationTime)
                 .signWith(key)
                 .compact();
     }
+
     /**
      * Refresh Token 생성
      */
@@ -122,13 +121,6 @@ public class TokenService {
      */
     public Optional<String> extractEmail(String token) {
         try {
-            // Google accessToken인지 확인
-            if (token.startsWith("ya29.")) {
-                log.info("[Google 토큰] Google accessToken 감지됨, UserInfo API에서 이메일 가져오기");
-                String email = getEmailFromGoogleToken(token);
-                return Optional.ofNullable(email);
-            }
-
             Claims claims = Jwts.parser()
                     .verifyWith((SecretKey) key)
                     .build()
@@ -144,6 +136,22 @@ public class TokenService {
             throw new CustomException(ErrorCode.INVALID_TOKEN_EXCEPTION, "유효하지 않은 토큰입니다.");
         }
     }
+
+    public Optional<Long> extractUserId(String token) {
+        try {
+            Claims claims = Jwts.parser()
+                    .verifyWith((SecretKey) key)
+                    .build()
+                    .parseSignedClaims(token)
+                    .getPayload();
+
+            return Optional.ofNullable(claims.get("userId", Integer.class)).map(Long::valueOf);
+        } catch (Exception e) {
+            log.error("토큰에서 userId 추출 실패", e);
+            return Optional.empty();
+        }
+    }
+
 
     public Optional<RoleType> extractRole(String token) {
         try {
@@ -180,49 +188,6 @@ public class TokenService {
             return Optional.empty();
         }
     }
-
-
-
-
-    // Google OAuth2 토큰 검증 후 사용자 정보 추출
-    public String getEmailFromGoogleToken(String accessToken) {
-        try {
-            RestTemplate restTemplate = new RestTemplate();
-            HttpHeaders headers = new HttpHeaders();
-            headers.set("Authorization", "Bearer " + accessToken);
-
-            HttpEntity<String> entity = new HttpEntity<>(headers);
-            ResponseEntity<Map> response = restTemplate.exchange(
-                    "https://www.googleapis.com/oauth2/v2/userinfo",
-                    HttpMethod.GET,
-                    entity,
-                    Map.class
-            );
-
-            Map<String, Object> userInfo = response.getBody();
-            return userInfo != null ? (String) userInfo.get("email") : null;
-        } catch (Exception e) {
-            log.error("Google UserInfo API 오류: {}", e.getMessage());
-            return null;
-        }
-    }
-
-    // Google 액세스 토큰을 검증하고 JWT 토큰을 반환
-    public String authenticateWithGoogle(String accessToken) {
-        // Google 액세스 토큰에서 이메일 가져오기
-        String email = getEmailFromGoogleToken(accessToken);
-        if (email == null) {
-            throw new RuntimeException("유효하지 않은 Google 토큰입니다.");
-        }
-
-        // 이메일로 사용자 정보 조회
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
-
-        // JWT 토큰 생성
-        return createAccessToken(user.getEmail());
-    }
-
     /**
      * Refresh Token을 DB에 저장
      */
