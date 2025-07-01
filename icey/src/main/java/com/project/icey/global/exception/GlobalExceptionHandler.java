@@ -2,6 +2,7 @@ package com.project.icey.global.exception;
 
 
 import com.project.icey.global.dto.ApiResponseTemplete;
+import com.project.icey.global.exception.model.CoreApiException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
@@ -49,4 +50,10 @@ public class GlobalExceptionHandler {
         return ApiResponseTemplete.error(ErrorCode.LOGIN_USER_FAILED,  e.getMessage() );
 
     }
+
+    @ExceptionHandler(CoreApiException.class)
+    public ResponseEntity<ApiResponseTemplete<String>> handleCoreApiException(CoreApiException e) {
+        return ApiResponseTemplete.error(ErrorCode.LLM_SERVER_ERROR, e.getMessage());
+    }
+
 }
