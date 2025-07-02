@@ -1,10 +1,7 @@
 package com.project.icey.app.domain;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 
 import javax.naming.Context;
@@ -17,6 +14,7 @@ import java.time.LocalDateTime;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 @Table(name = "TEAM")
 public class Team {
 
@@ -27,6 +25,7 @@ public class Team {
     private String teamName;
     private Integer memberNum;
 
+    @Column(updatable = false)
     private LocalDateTime createdAt;
     private LocalDateTime expiration;
 
