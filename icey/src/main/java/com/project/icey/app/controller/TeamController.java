@@ -17,6 +17,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequiredArgsConstructor
@@ -37,26 +38,16 @@ public class TeamController {
     }
 
     // 유저별 팀 목록 조회
-    /*@GetMapping("")
-    public ResponseEntity<TeamResponse> getTeam(@AuthenticationPrincipal CustomUserDetails userDetails) {
+    @GetMapping("")
+    public ResponseEntity<List<TeamResponse>> getTeam(@AuthenticationPrincipal CustomUserDetails userDetails) {
         User user = userDetails.getUser();
-        List<UserTeamManager> userTeams = userteamRepository.findByUser(user)
+        List<TeamResponse> teams = teamService.getTeamsByUser(user);
+        return ResponseEntity.ok(teams);
 
-        return userTeams.stream()
-                .map(utm -> {
-                    Team team = utm.getTeam();
-                    return new TeamResponse(
-                            team.getTeamId(),
-                            team.getTeamName(),
-                            team.getMemberNum(),
-                            team.getInvitation()
-                    );
-                })
-                .collect(Collectors.toList());
-
-    }*/
+    }
 
     // 팀 초대 링크 조회
+
 
     // 팀별 상세 기본정보 조회 + 멤버 목록도 포함할까?
 

@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -46,8 +47,20 @@ public class TeamService {
         );
     }
 
-    public List<TeamResponse> getTeamByUser(User user){
+    public List<TeamResponse> getTeamsByUser(User user){
         List<UserTeamManager> userTeams = userteamRepository.findByUser(user);
+
+        return userTeams.stream()
+                .map(utm -> {
+                    Team team = utm.getTeam();
+                    return new TeamResponse(
+                            team.getTeamId(),
+                            team.getTeamName(),
+                            team.getMemberNum(),
+                            team.getInvitation()
+                    );
+                })
+                .collect(Collectors.toList());
 
     }
 
