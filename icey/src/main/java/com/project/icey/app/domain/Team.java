@@ -25,7 +25,7 @@ public class Team {
     private Long teamId;
 
     private String teamName;
-    private int memberNum;
+    private Integer memberNum;
 
     private LocalDateTime createdAt;
     private LocalDateTime expiration;
