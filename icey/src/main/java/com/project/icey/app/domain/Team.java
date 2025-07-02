@@ -27,14 +27,14 @@ public class Team {
     private int memberNum;
 
     private LocalDateTime createdAt;
-    private LocalDateTime Expiration;
+    private LocalDateTime expiration;
 
     private String invitation;
 
     @PrePersist
     public void prePersist() {
         this.createdAt = LocalDateTime.now();
-        this.Expiration = LocalDateTime.now().plus(Duration.ofDays(30));
+        this.expiration = LocalDateTime.now().plus(Duration.ofDays(30));
 
     }
 
