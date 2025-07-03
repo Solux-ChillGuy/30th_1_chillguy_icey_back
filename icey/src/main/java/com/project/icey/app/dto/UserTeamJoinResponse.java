@@ -5,10 +5,10 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public class TeamResponse {
-    private Long id;
+public class UserTeamJoinResponse {
+    private Long teamId;
     private String teamName;
-    private Integer memberNum;
-    private String invitation;
-    private String dDay;
+    private Long userId;
+    private String username;
+    private String joinedAt;
 }

@@ -8,6 +8,8 @@ import javax.naming.Context;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
@@ -30,6 +32,10 @@ public class Team {
     private LocalDateTime expiration;
 
     private String invitation;
+
+    @OneToMany(mappedBy = "team", cascade = CascadeType.ALL)
+    private List<UserTeamManager> members = new ArrayList<>();
+
 
     @PrePersist
     public void prePersist() {
