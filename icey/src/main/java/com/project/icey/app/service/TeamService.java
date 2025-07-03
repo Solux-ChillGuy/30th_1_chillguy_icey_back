@@ -5,6 +5,7 @@ import com.project.icey.app.domain.User;
 import com.project.icey.app.domain.UserRole;
 import com.project.icey.app.domain.UserTeamManager;
 import com.project.icey.app.dto.CreateTeamRequest;
+import com.project.icey.app.dto.InvitationResponse;
 import com.project.icey.app.dto.TeamResponse;
 import com.project.icey.app.repository.TeamRepository;
 import com.project.icey.app.repository.UserRepository;
@@ -47,7 +48,7 @@ public class TeamService {
         );
     }
 
-    public List<TeamResponse> getTeamsByUser(User user){
+    public List<TeamResponse> getTeamsByUser(User user){ // 여기서 응답방식 수정 필요
         List<UserTeamManager> userTeams = userteamRepository.findByUser(user);
 
         return userTeams.stream()
@@ -64,10 +65,17 @@ public class TeamService {
 
     }
 
-    public String getInvitation(Long teamId){
+    public InvitationResponse getInvitation(User user, Long teamId){
         Team team = teamRepository.findById(teamId)
                 .orElseThrow(() -> new IllegalArgumentException("Team을 찾지 못했습니다"));
 
-        return "http://localhost:8080/icey/invitation/"+team.getInvitation(); //추후 배포후 도메인 변경 필요
+        String invitationLink = "http://localhost:8080/icey/invitation/"+team.getInvitation();
+
+        return new InvitationResponse(
+                team.getTeamId(),
+                team.getTeamName(),
+                invitationLink
+
+        );
     }
 }
