@@ -75,8 +75,14 @@ public class TeamController {
     }
 
 
-
     // 팀별 상세 기본정보 조회
+    @GetMapping("/{teamId}")
+    public ResponseEntity<TeamDetailResponse> getTeamDetail(@AuthenticationPrincipal CustomUserDetails userDetails,
+                                                            @PathVariable Long teamId) {
+        User user = userDetails.getUser();
+        TeamDetailResponse response = teamService.getTeamDetail(teamId, user);
+        return ResponseEntity.ok(response);
+    }
 
     // 팀 폭파
 

@@ -33,9 +33,8 @@ public class Team {
 
     private String invitation;
 
-    @OneToMany(mappedBy = "team", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "team", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<UserTeamManager> members = new ArrayList<>();
-
 
     @PrePersist
     public void prePersist() {

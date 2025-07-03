@@ -11,6 +11,7 @@ import com.project.icey.app.repository.UserTeamRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.Duration;
@@ -39,7 +40,7 @@ public class TeamService {
         UserTeamManager utm = UserTeamManager.builder()
                         .user(creator)
                         .team(team)
-                        .role(UserRole.LEADER.name())
+                        .role(UserRole.LEADER)
                         .build();
 
         userteamRepository.save(utm);
@@ -103,7 +104,7 @@ public class TeamService {
         UserTeamManager relation = UserTeamManager.builder()
                 .user(user)
                 .team(team)
-                .role(UserRole.MEMBER.name())
+                .role(UserRole.MEMBER)
                 .build();
         userteamRepository.save(relation);
 
@@ -113,6 +114,32 @@ public class TeamService {
                 user.getId(),
                 user.getUserName(),
                 LocalDateTime.now().toString() // 필요시 formatter 적용
+        );
+    }
+
+    @Transactional(readOnly = true)
+    public TeamDetailResponse getTeamDetail(Long teamId, User user){
+        Team team = teamRepository.findById(teamId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "해당 팀을 찾을 수 없습니다."));
+
+        List<TeamMember> members = team.getMembers().stream()
+                .map(utm -> new TeamMember(
+                        utm.getUser().getId(),
+                        utm.getUser().getUserName(),
+                        utm.getRole()
+                ))
+                .collect(Collectors.toList());
+
+        long daysLeft = ChronoUnit.DAYS.between(LocalDate.now(), team.getExpiration().toLocalDate());
+        String dDay ="D-" + daysLeft;
+
+        return new TeamDetailResponse(
+                team.getTeamId(),
+                team.getTeamName(),
+                team.getMemberNum(),
+                dDay,
+                members
+
         );
     }
 
