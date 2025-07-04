@@ -3,11 +3,13 @@ package com.project.icey.global.exception;
 
 import com.project.icey.global.dto.ApiResponseTemplete;
 import com.project.icey.global.exception.model.CoreApiException;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.server.ResponseStatusException;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
@@ -54,6 +56,37 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(CoreApiException.class)
     public ResponseEntity<ApiResponseTemplete<String>> handleCoreApiException(CoreApiException e) {
         return ApiResponseTemplete.error(ErrorCode.LLM_SERVER_ERROR, e.getMessage());
+    }
+
+    @ExceptionHandler(ResponseStatusException.class)
+    public ResponseEntity<ApiResponseTemplete<String>> handleResponseStatusException(ResponseStatusException e) {
+        HttpStatus status = HttpStatus.resolve(e.getStatusCode().value());
+        if (status == null) {
+            status = HttpStatus.INTERNAL_SERVER_ERROR;
+        }
+        ErrorCode errorCode = mapHttpStatusToErrorCode(status);
+
+        return ApiResponseTemplete.error(errorCode, e.getReason());
+    }
+
+    private ErrorCode mapHttpStatusToErrorCode(HttpStatus status) {
+        switch (status) {
+            case BAD_REQUEST:
+                return ErrorCode.INVALID_REQUEST;
+            case UNAUTHORIZED:
+                return ErrorCode.UNAUTHORIZED_EXCEPTION;
+            case FORBIDDEN:
+                return ErrorCode.ACCESS_DENIED_EXCEPTION;
+            case NOT_FOUND:
+                return ErrorCode.RESOURCE_NOT_FOUND;
+            case CONFLICT:
+                return ErrorCode.ALREADY_EXIST_SUBJECT_EXCEPTION;
+            case INTERNAL_SERVER_ERROR:
+                return ErrorCode.INTERNAL_SERVER_ERROR;
+            default:
+                return ErrorCode.UNKNOWN_ERROR;
+        }
+
     }
 
 }

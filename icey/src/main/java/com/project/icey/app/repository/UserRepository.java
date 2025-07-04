@@ -15,4 +15,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
      * 사용자 Rtoken 기준으로 User 엔티티 조회.
      */
     Optional<User> findByRefreshToken(String refreshToken);
+
+    Optional<User> getUserById(Long id);
 }
