@@ -40,10 +40,10 @@ public class TeamController {
         User user = userDetails.getUser();
         TeamResponse response = teamService.createTeam(createTeamRequest, user);
 
-        return ResponseEntity.ok(response);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    // 유저별 팀 목록 조회
+    // 유저별 팀 목록 조회 + 여기서 user가 리더인지 아닌지 추가로 필요할 듯
     @GetMapping("")
     public ResponseEntity<List<TeamResponse>> getTeam(@AuthenticationPrincipal CustomUserDetails userDetails) {
         User user = userDetails.getUser();
@@ -65,7 +65,7 @@ public class TeamController {
     }
 
     //초대 링크 수락
-    @PostMapping("/invitation/{invitationToken}")
+    @PostMapping("/invitation/{invitationToken}")// 예외처리 추가해야함. 본인이 다시 중복가입을 시도하는 경우의 상태코드가 이상함
     public ResponseEntity<UserTeamJoinResponse> joinTeam(@AuthenticationPrincipal CustomUserDetails userDetails,
                                                       @PathVariable String invitationToken){
 
@@ -73,7 +73,7 @@ public class TeamController {
 
        UserTeamJoinResponse response = teamService.joinTeamByInvitation(user, invitationToken);
 
-        return ResponseEntity.ok(response);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
 
@@ -102,7 +102,7 @@ public class TeamController {
         }
 
         teamRepository.delete(team); // Cascade로 members도 삭제됨
-        return ResponseEntity.ok("팀이 성공적으로 삭제되었습니다.");
+        return ResponseEntity.noContent().build(); // 204 No Content
     }
 
     // 팀 탈퇴
@@ -121,7 +121,7 @@ public class TeamController {
         }
 
         userteamRepository.delete(utm);
-        return ResponseEntity.ok("팀에서 성공적으로 탈퇴했습니다.");
+        return ResponseEntity.noContent().build();
     }
 
 }
