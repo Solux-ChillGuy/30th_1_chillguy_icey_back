@@ -65,15 +65,24 @@ public class TeamController {
     }
 
     //초대 링크 수락
-    @PostMapping("/invitation/{invitationToken}")// 예외처리 추가해야함. 본인이 다시 중복가입을 시도하는 경우의 상태코드가 이상함
-    public ResponseEntity<UserTeamJoinResponse> joinTeam(@AuthenticationPrincipal CustomUserDetails userDetails,
+    @PostMapping("/invitation/{invitationToken}")// 예외처리 추가해야함. 본인이 다시 중복가입을 시도하는 경우의 상태코드가 이상함(완료)
+    public ResponseEntity<?> joinTeam(@AuthenticationPrincipal CustomUserDetails userDetails,
                                                       @PathVariable String invitationToken){
-
         User user = userDetails.getUser();
+        try {
+            UserTeamJoinResponse response = teamService.joinTeamByInvitation(user, invitationToken);
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
 
-       UserTeamJoinResponse response = teamService.joinTeamByInvitation(user, invitationToken);
-
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        } catch (ResponseStatusException e) {
+            return ResponseEntity
+                    .status(e.getStatusCode())
+                    .body(new ErrorResponse(e.getReason()));
+        } catch (Exception e) {
+            //e.printStackTrace();
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ErrorResponse("서버 오류가 발생했습니다."));
+        }
     }
 
 
@@ -101,8 +110,8 @@ public class TeamController {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "팀장만 팀을 삭제할 수 있습니다.");
         }
 
-        teamRepository.delete(team); // Cascade로 members도 삭제됨
-        return ResponseEntity.noContent().build(); // 204 No Content
+        teamRepository.delete(team);
+        return ResponseEntity.noContent().build();
     }
 
     // 팀 탈퇴

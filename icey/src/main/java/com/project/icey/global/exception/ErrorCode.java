@@ -96,4 +96,5 @@ public enum ErrorCode {
     public int getHttpStatusCode(){
         return httpStatus.value();
     }
+
 }

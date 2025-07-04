@@ -11,4 +11,5 @@ public class TeamResponse {
     private Integer memberNum;
     private String invitation;
     private String dDay;
+    private boolean isLeader;
 }

@@ -54,7 +54,8 @@ public class TeamService {
                 team.getTeamName(),
                 team.getMemberNum(),
                 invitationLink,
-                dDay
+                dDay,
+                utm.getRole() == UserRole.MEMBER
         );
     }
 
@@ -72,7 +73,8 @@ public class TeamService {
                             team.getTeamName(),
                             team.getMemberNum(),
                             team.getInvitation(),
-                            dDay
+                            dDay,
+                            utm.getRole() == UserRole.LEADER
                     );
                 })
                 .collect(Collectors.toList());
@@ -98,7 +100,7 @@ public class TeamService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "유효하지 않은 초대 링크입니다."));
 
         if (userteamRepository.existsByUserAndTeam(user, team)) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "이미 팀에 가입되어 있습니다.");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "이미 팀에 가입되어 있습니다."); // ✅ 409 Conflict로 변경
         }
 
         UserTeamManager relation = UserTeamManager.builder()
