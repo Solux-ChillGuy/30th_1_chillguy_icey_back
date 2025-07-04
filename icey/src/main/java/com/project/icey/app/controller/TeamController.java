@@ -2,6 +2,7 @@ package com.project.icey.app.controller;
 
 import com.project.icey.app.domain.Team;
 import com.project.icey.app.domain.User;
+import com.project.icey.app.domain.UserRole;
 import com.project.icey.app.domain.UserTeamManager;
 import com.project.icey.app.dto.*;
 import com.project.icey.app.repository.TeamRepository;
@@ -15,6 +16,7 @@ import org.apache.coyote.Response;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -85,8 +87,41 @@ public class TeamController {
     }
 
     // 팀 폭파
+    @DeleteMapping("/{teamId}")
+    public ResponseEntity<String> DeleteTeam(@AuthenticationPrincipal CustomUserDetails userDetails,
+                                                   @PathVariable Long teamId){
+        User user = userDetails.getUser();
+        Team team = teamRepository.findById(teamId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "해당 팀을 찾을 수 없습니다."));
 
+        UserTeamManager utm = userteamRepository.findByUserAndTeam(user, team)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN, "팀에 소속되어 있지 않습니다."));
+
+        if (utm.getRole() != UserRole.LEADER) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "팀장만 팀을 삭제할 수 있습니다.");
+        }
+
+        teamRepository.delete(team); // Cascade로 members도 삭제됨
+        return ResponseEntity.ok("팀이 성공적으로 삭제되었습니다.");
+    }
 
     // 팀 탈퇴
+    @DeleteMapping("/{teamId}/leave")
+    public ResponseEntity<String> leaveTeam(@AuthenticationPrincipal CustomUserDetails userDetails,
+                                            @PathVariable Long teamId) {
+        User user = userDetails.getUser();
+        Team team = teamRepository.findById(teamId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "해당 팀을 찾을 수 없습니다."));
+
+        UserTeamManager utm = userteamRepository.findByUserAndTeam(user, team)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "이 팀에 속해있지 않습니다."));
+
+        if (utm.getRole() == UserRole.LEADER) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "팀장은 팀을 탈퇴할 수 없습니다. 팀 삭제만 가능합니다.");
+        }
+
+        userteamRepository.delete(utm);
+        return ResponseEntity.ok("팀에서 성공적으로 탈퇴했습니다.");
+    }
 
 }
