@@ -1,6 +1,7 @@
 package com.project.icey.app.dto;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 
 @Getter
@@ -8,8 +9,6 @@ import lombok.Getter;
 public class TeamResponse {
     private Long id;
     private String teamName;
-    private Integer memberNum;
     private String invitation;
     private String dDay;
-    private boolean isLeader;
 }

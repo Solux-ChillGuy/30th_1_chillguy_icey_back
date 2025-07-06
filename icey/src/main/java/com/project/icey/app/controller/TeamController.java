@@ -6,22 +6,17 @@ import com.project.icey.app.domain.UserRole;
 import com.project.icey.app.domain.UserTeamManager;
 import com.project.icey.app.dto.*;
 import com.project.icey.app.repository.TeamRepository;
-import com.project.icey.app.repository.UserRepository;
 import com.project.icey.app.repository.UserTeamRepository;
 import com.project.icey.app.service.TeamService;
-import com.project.icey.global.security.TokenService;
-import jakarta.servlet.http.HttpServletRequest;
+
 import lombok.RequiredArgsConstructor;
-import org.apache.coyote.Response;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequiredArgsConstructor
@@ -43,7 +38,7 @@ public class TeamController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    // 유저별 팀 목록 조회 + 여기서 user가 리더인지 아닌지 추가로 필요할 듯
+    // 유저별 팀 목록 조회 + 여기서 user가 리더인지 아닌지 추가로 필요할 듯 -> 필요없어짐 + 현재 있는 팀이 무엇인지에
     @GetMapping("")
     public ResponseEntity<List<TeamResponse>> getTeam(@AuthenticationPrincipal CustomUserDetails userDetails) {
         User user = userDetails.getUser();
@@ -81,6 +76,20 @@ public class TeamController {
             //e.printStackTrace();
             return ResponseEntity
                     .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ErrorResponse("서버 오류가 발생했습니다."));
+        }
+    }
+    //초대링크를 통한 초대장(팀 정보) 조회
+    @GetMapping("/invitation/{invitationToken}")
+    public ResponseEntity<?> getTeamInfoByInvitationToken(@PathVariable String invitationToken) {
+        try {
+            InvitationTeamInfoResponse response = teamService.getTeamInfoByInvitation(invitationToken);
+            return ResponseEntity.ok(response);
+        } catch (ResponseStatusException e) {
+            return ResponseEntity.status(e.getStatusCode())
+                    .body(new ErrorResponse(e.getReason()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ErrorResponse("서버 오류가 발생했습니다."));
         }
     }

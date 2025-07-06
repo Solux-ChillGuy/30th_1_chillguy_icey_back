@@ -9,5 +9,5 @@ public class InvitationResponse {
 
     private Long id;
     private String teamName;
-    private String invitation;
+    private String invitationLink;
 }

@@ -8,5 +8,4 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class CreateTeamRequest {
     private String teamName;
-    private Integer memberNum;
 }
