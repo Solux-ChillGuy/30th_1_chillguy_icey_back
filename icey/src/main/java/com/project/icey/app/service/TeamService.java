@@ -31,7 +31,6 @@ public class TeamService {
     public TeamResponse createTeam(CreateTeamRequest request, User creator){
         Team team = Team.builder() //
                 .teamName(request.getTeamName())
-                .memberNum(request.getMemberNum())
                 .invitation(UUID.randomUUID().toString())
                 .build();
 
@@ -45,6 +44,8 @@ public class TeamService {
 
         userteamRepository.save(utm);
 
+        int memberCnt = userteamRepository.countByTeam(team);
+
         String invitationLink = "http://localhost:8080/icey/invitation/"+team.getInvitation();
         long days = Duration.between(LocalDateTime.now(), team.getExpiration()).toDays();
         String dDay = "D-" + days;
@@ -52,7 +53,7 @@ public class TeamService {
         return new TeamResponse(
                 team.getTeamId(),
                 team.getTeamName(),
-                team.getMemberNum(),
+                memberCnt,
                 invitationLink,
                 dDay,
                 utm.getRole() == UserRole.MEMBER
@@ -65,13 +66,16 @@ public class TeamService {
         return userTeams.stream()
                 .map(utm -> {
                     Team team = utm.getTeam();
+
+                    int memberCnt = userteamRepository.countByTeam(team);
+
                     long daysLeft = ChronoUnit.DAYS.between(LocalDate.now(), team.getExpiration().toLocalDate());
                     String dDay = "D-" + daysLeft;
 
                     return new TeamResponse(
                             team.getTeamId(),
                             team.getTeamName(),
-                            team.getMemberNum(),
+                            memberCnt,
                             team.getInvitation(),
                             dDay,
                             utm.getRole() == UserRole.LEADER
@@ -124,6 +128,8 @@ public class TeamService {
         Team team = teamRepository.findById(teamId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "해당 팀을 찾을 수 없습니다."));
 
+        int memberCnt = userteamRepository.countByTeam(team);
+
         List<TeamMember> members = team.getMembers().stream()
                 .map(utm -> new TeamMember(
                         utm.getUser().getId(),
@@ -138,7 +144,7 @@ public class TeamService {
         return new TeamDetailResponse(
                 team.getTeamId(),
                 team.getTeamName(),
-                team.getMemberNum(),
+                memberCnt,
                 dDay,
                 members
 

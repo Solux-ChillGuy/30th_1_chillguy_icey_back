@@ -20,4 +20,6 @@ public interface UserTeamRepository extends JpaRepository<UserTeamManager, Long>
     List<UserTeamManager> findAllByTeam(Team team);
 
     void deleteByUserAndTeam(User user, Team team);
+
+    int countByTeam(Team team);
 }
