@@ -60,7 +60,7 @@ public class TeamService {
         );
     }
 
-    public List<TeamResponse> getTeamsByUser(User user){ // 여기서 응답방식 수정 필요
+    public List<TeamResponse> getTeamsByUser(User user){
         List<UserTeamManager> userTeams = userteamRepository.findByUser(user);
 
         return userTeams.stream()
@@ -102,10 +102,17 @@ public class TeamService {
     public UserTeamJoinResponse joinTeamByInvitation(User user, String invitationToken) {
         Team team = teamRepository.findByInvitation(invitationToken)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "유효하지 않은 초대 링크입니다."));
+        int memberCnt = userteamRepository.countByTeam(team);
+
+        if(memberCnt >= 10) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "팀 인원 수가 최대 10명을 초과하여 더 이상 가입할 수 없습니다.");
+        }
 
         if (userteamRepository.existsByUserAndTeam(user, team)) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "이미 팀에 가입되어 있습니다."); // ✅ 409 Conflict로 변경
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "이미 팀에 가입되어 있습니다."); //409 Conflict로 변경
         }
+
+
 
         UserTeamManager relation = UserTeamManager.builder()
                 .user(user)
@@ -148,6 +155,20 @@ public class TeamService {
                 dDay,
                 members
 
+        );
+
+    }
+
+    public InvitationTeamInfoResponse getTeamInfoByInvitation(String invitationToken){
+        Team team = teamRepository.findByInvitation(invitationToken)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "유효하지 않은 초대 링크입니다."));
+
+        int memberCnt = userteamRepository.countByTeam(team);
+
+        return new InvitationTeamInfoResponse(
+                team.getTeamId(),
+                team.getTeamName(),
+                memberCnt
         );
     }
 
