@@ -12,5 +12,4 @@ public class TeamDetailResponse {
     private String teamName;
     private Integer memberCnt;
     private String dDay;
-    private List<TeamMember> members;
 }

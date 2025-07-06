@@ -53,10 +53,8 @@ public class TeamService {
         return new TeamResponse(
                 team.getTeamId(),
                 team.getTeamName(),
-                memberCnt,
                 invitationLink,
-                dDay,
-                utm.getRole() == UserRole.MEMBER
+                dDay
         );
     }
 
@@ -75,10 +73,9 @@ public class TeamService {
                     return new TeamResponse(
                             team.getTeamId(),
                             team.getTeamName(),
-                            memberCnt,
                             team.getInvitation(),
-                            dDay,
-                            utm.getRole() == UserRole.LEADER
+                            dDay
+
                     );
                 })
                 .collect(Collectors.toList());
@@ -137,13 +134,13 @@ public class TeamService {
 
         int memberCnt = userteamRepository.countByTeam(team);
 
-        List<TeamMember> members = team.getMembers().stream()
+        /*List<TeamMember> members = team.getMembers().stream()
                 .map(utm -> new TeamMember(
                         utm.getUser().getId(),
                         utm.getUser().getUserName(),
                         utm.getRole()
                 ))
-                .collect(Collectors.toList());
+                .collect(Collectors.toList());*/
 
         long daysLeft = ChronoUnit.DAYS.between(LocalDate.now(), team.getExpiration().toLocalDate());
         String dDay ="D-" + daysLeft;
@@ -152,8 +149,7 @@ public class TeamService {
                 team.getTeamId(),
                 team.getTeamName(),
                 memberCnt,
-                dDay,
-                members
+                dDay
 
         );
 

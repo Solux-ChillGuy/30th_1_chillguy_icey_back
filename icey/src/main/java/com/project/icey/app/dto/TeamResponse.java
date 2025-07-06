@@ -9,8 +9,6 @@ import lombok.Getter;
 public class TeamResponse {
     private Long id;
     private String teamName;
-    private Integer memberCnt;
     private String invitation;
     private String dDay;
-    private boolean isLeader;
 }
