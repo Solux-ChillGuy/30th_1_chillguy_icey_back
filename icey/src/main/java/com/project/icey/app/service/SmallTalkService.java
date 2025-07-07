@@ -1,5 +1,6 @@
 package com.project.icey.app.service;
 
+import com.project.icey.app.domain.QuestionType;
 import com.project.icey.app.domain.SmallTalk;
 import com.project.icey.app.domain.SmallTalkList;
 import com.project.icey.app.domain.User;
@@ -33,11 +34,13 @@ public class SmallTalkService {
         SmallTalkResponse resDto = smallTalkGeneratorService.generateSmallTalkWithTitle(target, purpose);
 
         return new SmallTalkListDto(
-                null, // 아직 저장 안 했으므로 ID 없음
+                null,
                 target,
                 purpose,
                 resDto.getTitle(),
-                resDto.getQuestionTips().stream().map(q -> new SmallTalkDto(null, q.getQuestion(), q.getTip(), null)).toList()
+                resDto.getQuestionTips().stream()
+                        .map(q -> new SmallTalkDto(null, q.getQuestion(), q.getTip(), null, QuestionType.AI))
+                        .toList()
         );
     }
 
@@ -50,16 +53,29 @@ public class SmallTalkService {
         list.setTitle(request.getTitle());
 
         for (SmallTalkDto dto : request.getSmallTalks()) {
+            validateQuestionNotNull(dto.getQuestion());
+
             SmallTalk st = new SmallTalk();
             st.setQuestion(dto.getQuestion());
             st.setTip(dto.getTip());
             st.setAnswer(dto.getAnswer());
+
+            // ✅ questionType 자동 매핑
+            if (dto.getQuestionType() != null) {
+                st.setQuestionType(dto.getQuestionType());
+            } else if (dto.getTip() == null) {
+                st.setQuestionType(QuestionType.SELF);  // tip이 없으면 사용자가 추가한 질문으로 판단
+            } else {
+                st.setQuestionType(QuestionType.AI);    // 기본값 (tip이 있으면 AI 질문으로 간주)
+            }
+
             st.setSmallTalkList(list);
             list.getSmallTalks().add(st);
         }
 
         return listRepository.save(list);
     }
+
 
 
 
@@ -73,6 +89,39 @@ public class SmallTalkService {
 
         return convertToDto(list);
     }
+
+    @Transactional
+    public void editSmallTalks(Long listId, List<SmallTalkEditRequest.EditItem> edits, User user) {
+        SmallTalkList list = listRepository.findById(listId)
+                .orElseThrow(() -> new CoreApiException(ErrorCode.RESOURCE_NOT_FOUND));
+        validateOwner(list.getUser(), user);
+
+        Map<Long, SmallTalk> talkMap = list.getSmallTalks().stream()
+                .collect(Collectors.toMap(SmallTalk::getId, Function.identity()));
+
+        for (SmallTalkEditRequest.EditItem item : edits) {
+            if (item.getId() == null) {
+                // 새로 추가
+                SmallTalk newTalk = new SmallTalk();
+                newTalk.setQuestion(item.getQuestion());
+                newTalk.setAnswer(item.getAnswer());
+                newTalk.setTip(null); // 사용자 추가 질문이므로 tip 없음
+                newTalk.setQuestionType(QuestionType.SELF);
+                newTalk.setSmallTalkList(list);
+                list.getSmallTalks().add(newTalk);
+            } else {
+                SmallTalk existing = talkMap.get(item.getId());
+                if (existing == null) continue;
+
+                if (existing.getQuestionType() == QuestionType.AI) {
+                    existing.setQuestion(item.getQuestion()); // 생성된 질문만 수정 가능
+                }
+                existing.setAnswer(item.getAnswer()); // 답변은 항상 수정 가능
+            }
+        }
+        listRepository.save(list);
+    }
+
 
 
     @Transactional
@@ -123,6 +172,13 @@ public class SmallTalkService {
         }
     }
 
+    private void validateQuestionNotNull(String question) {
+        if (question == null || question.trim().isEmpty()) {
+            throw new CoreApiException(ErrorCode.INVALID_REQUEST);
+        }
+    }
+
+
     public List<SmallTalkListDto> getUserSmallTalkLists(User user) {
         List<SmallTalkList> lists = listRepository.findByUserOrderByCreatedAtDesc(user);
         return lists.stream()
@@ -143,6 +199,7 @@ public class SmallTalkService {
             d.setQuestion(st.getQuestion());
             d.setTip(st.getTip());
             d.setAnswer(st.getAnswer());
+            d.setQuestionType(st.getQuestionType());
             return d;
         }).collect(Collectors.toList()));
         return dto;

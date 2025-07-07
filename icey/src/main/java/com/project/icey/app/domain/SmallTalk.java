@@ -17,9 +17,12 @@ public class SmallTalk {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false)
     private String question;
     private String tip;
     private String answer; // 사용자가 작성하는 답변
+
+    private QuestionType questionType;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "small_talk_list_id")
