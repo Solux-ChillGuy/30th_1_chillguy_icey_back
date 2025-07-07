@@ -19,7 +19,6 @@ public class BalanceGame {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String title;
     private String option1;
     private String option2;
 

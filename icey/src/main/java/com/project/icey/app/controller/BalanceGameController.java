@@ -1,6 +1,7 @@
 package com.project.icey.app.controller;
 
 import com.project.icey.app.domain.BalanceGame;
+import com.project.icey.app.dto.BalanceGameDto;
 import com.project.icey.app.dto.BalanceGameResultDto;
 import com.project.icey.app.dto.BalanceGameVoteRequest;
 import com.project.icey.app.dto.CustomUserDetails;
@@ -22,14 +23,17 @@ public class BalanceGameController {
     private final BalanceGameService balanceGameService;
 
     // 게임 생성
+    // 반환 타입을 BalanceGameDto로 변경
     @PostMapping("/generate")
-    public ResponseEntity<ApiResponseTemplete<BalanceGame>> createBalanceGame(
+    public ResponseEntity<ApiResponseTemplete<BalanceGameDto>> createBalanceGame(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @PathVariable Long teamId
     ) {
         BalanceGame game = balanceGameService.createBalanceGame(teamId);
-        return ApiResponseTemplete.success(SuccessCode.CREATE_POST_SUCCESS, game);
+        BalanceGameDto dto = BalanceGameDto.from(game);
+        return ApiResponseTemplete.success(SuccessCode.CREATE_POST_SUCCESS, dto);
     }
+
 
     // 투표
     @PostMapping("/{gameId}/vote")

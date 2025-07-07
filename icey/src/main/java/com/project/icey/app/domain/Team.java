@@ -2,6 +2,7 @@ package com.project.icey.app.domain;
 
 import jakarta.persistence.*;
 import lombok.*;
+import net.minidev.json.annotate.JsonIgnore;
 import org.springframework.data.annotation.CreatedDate;
 
 import javax.naming.Context;
