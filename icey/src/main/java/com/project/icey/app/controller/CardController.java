@@ -1,11 +1,11 @@
 package com.project.icey.app.controller;
 
-import com.project.icey.app.domain.User;
+import com.project.icey.app.dto.CardRequest;
+import com.project.icey.app.dto.CardResponse;
 import com.project.icey.app.dto.CustomUserDetails;
 import com.project.icey.app.service.CardService;
-import com.project.icey.app.dto.*;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.annotation.AuthenticationPrincipal; //
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -17,64 +17,47 @@ public class CardController {
 
     private final CardService cardService;
 
-    /* GET /api/cards  전역 템플릿 목록(원본)
+    /* GET /api/cards - 내 템플릿 목록 */
     @GetMapping
-    public List<CardResponse> list(@AuthenticationPrincipal User loginUser){
-        return cardService.listTemplates(loginUser.getId());
+    public List<CardResponse> list(@AuthenticationPrincipal CustomUserDetails principal) { 
+        return cardService.listTemplates(principal.getUser().getId());                    
     }
 
-    */
-
-    /* GET /api/cards  전역 템플릿 목록 */ //얘에서 문제 생겼는데 확인!!!!!!! 지피티가 알려준 방법인데 여전히 오류!!!!!!
-    @GetMapping
-    public List<CardResponse> list(@AuthenticationPrincipal CustomUserDetails userDetails){
-        Long userId = userDetails.getUser().getId();
-        return cardService.listTemplates(userId);
-    }
-
-    /* POST /api/cards   템플릿 생성 */
-    @PostMapping
+    /* POST /api/cards - 템플릿 생성 */
+    @PostMapping(params = "!teamId")
     public CardResponse create(@RequestBody CardRequest req,
-                               @AuthenticationPrincipal User loginUser){
-        return cardService.createTemplate(loginUser, req);
+                               @AuthenticationPrincipal CustomUserDetails principal) {   
+        return cardService.createTemplate(principal.getUser(), req);                      
     }
 
-
-    /* PATCH /api/cards/{id}  템플릿 수정 */
+    /* PATCH /api/cards/{id} - 템플릿 수정 */
     @PatchMapping("/{id}")
     public CardResponse update(@PathVariable Long id,
                                @RequestBody CardRequest req,
-                               @AuthenticationPrincipal User loginUser){
-        return cardService.update(id, loginUser.getId(), req);
+                               @AuthenticationPrincipal CustomUserDetails principal) {   
+        return cardService.update(id, principal.getUser().getId(), req);                 
     }
 
-    /* DELETE /api/cards/{id}  템플릿 삭제 */
+    /* DELETE /api/cards/{id} - 템플릿 삭제 */
     @DeleteMapping("/{id}")
     public void delete(@PathVariable Long id,
-                       @AuthenticationPrincipal User loginUser){
-        cardService.delete(id, loginUser.getId());
+                       @AuthenticationPrincipal CustomUserDetails principal) {           
+        cardService.delete(id, principal.getUser().getId());                              
     }
 
-
-    /* GET /api/teams/{teamId}/cards */
+    /* GET /api/teams/{teamId}/cards - 팀 명함 목록 */  //여기 상의하기
     @GetMapping("/teams/{teamId}/cards")
-    public List<CardResponse> teamCards(@PathVariable Long teamId){
+    public List<CardResponse> teamCards(@PathVariable Long teamId) {
         return cardService.listTeamCards(teamId);
     }
 
-    /* PUT /api/teams/{teamId}/cards/my-card?templateId=123 */
+    /* PUT /api/teams/{teamId}/cards/my-card?templateId=123 - 팀 명함 교체 */
     @PutMapping("/teams/{teamId}/cards/my-card")
     public CardResponse changeMyCard(@PathVariable Long teamId,
                                      @RequestParam Long templateId,
-                                     @AuthenticationPrincipal User me){
-        return cardService.applyTemplate(teamId, templateId, me);
+                                     @AuthenticationPrincipal CustomUserDetails principal) { 
+        return cardService.applyTemplate(teamId, templateId, principal.getUser());           
     }
 
-    /* 예시: POST /api/cards?teamId=42  → 새로 만들고 곧장 팀 42에 적용 */
-    @PostMapping(params = "teamId")
-    public CardResponse createAndApply(@RequestParam Long teamId,
-                                       @RequestBody CardRequest req,
-                                       @AuthenticationPrincipal User me){
-        return cardService.createAndApply(teamId, req, me);
-    }
+
 }
