@@ -1,8 +1,18 @@
 package com.project.icey.app.domain;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+import java.time.LocalDateTime;
 
 @Entity
+@Getter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Letter {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -21,5 +31,11 @@ public class Letter {
     private Card receiverCard;
 
     private String content;
+
+    @Column(nullable = false)
+    private LocalDateTime sentAt;
+
+    @Column(nullable = false)
+    private boolean isRead;
 
 }
