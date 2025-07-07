@@ -11,5 +11,5 @@ public class CardRequest {
     private String hobby;
     private String secretTip;
     private String tmi;
-    private String accessory;
+    private String profileColor;
 }
