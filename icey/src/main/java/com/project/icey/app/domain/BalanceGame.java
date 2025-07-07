@@ -19,18 +19,18 @@ public class BalanceGame {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    private String title;
     private String option1;
     private String option2;
 
-    private String title;
-
-    @OneToMany(mappedBy = "balanceGame", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<BalanceGameVote> votes = new ArrayList<>();
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "team_id")
+    private Team team;
 
     private LocalDateTime createdAt;
 
     @PrePersist
     public void prePersist() {
-        if (createdAt == null) createdAt = LocalDateTime.now();
+        this.createdAt = LocalDateTime.now();
     }
 }

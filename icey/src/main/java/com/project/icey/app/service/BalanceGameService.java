@@ -11,11 +11,13 @@ import com.project.icey.app.repository.BalanceGameVoteRepository;
 import com.project.icey.global.exception.ErrorCode;
 import com.project.icey.global.exception.model.CoreApiException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class BalanceGameService {
@@ -31,6 +33,7 @@ public class BalanceGameService {
         String prompt = """
             밸런스 게임 주제를 만들어줘. 형식은 다음과 같아.
             선택지는 긴 문장 형태가 아니라 단어 혹은 두 단어 정도로 되도록.
+            아래와 같은 형식의 밸런스 게임 json을 1개 생성해줘.
             {
                 "title": "게임 제목",
                 "option1": "선택지 1 내용",
