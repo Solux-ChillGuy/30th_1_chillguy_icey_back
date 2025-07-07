@@ -37,10 +37,10 @@ public class TeamService {
         teamRepository.save(team);
 
         UserTeamManager utm = UserTeamManager.builder()
-                        .user(creator)
-                        .team(team)
-                        .role(UserRole.LEADER)
-                        .build();
+                .user(creator)
+                .team(team)
+                .role(UserRole.LEADER)
+                .build();
 
         userteamRepository.save(utm);
 
