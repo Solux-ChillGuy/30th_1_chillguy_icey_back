@@ -2,6 +2,7 @@ package com.project.icey.app.repository;
 
 import com.project.icey.app.domain.Team;
 import com.project.icey.app.domain.User;
+import com.project.icey.app.domain.UserRole;
 import com.project.icey.app.domain.UserTeamManager;
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -20,4 +21,8 @@ public interface UserTeamRepository extends JpaRepository<UserTeamManager, Long>
     List<UserTeamManager> findAllByTeam(Team team);
 
     void deleteByUserAndTeam(User user, Team team);
+
+    //팀 별 멤버수 조회하는 메서드
+    int countByTeam(Team team);
+
 }

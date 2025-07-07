@@ -31,19 +31,20 @@ public class TeamService {
     public TeamResponse createTeam(CreateTeamRequest request, User creator){
         Team team = Team.builder() //
                 .teamName(request.getTeamName())
-                .memberNum(request.getMemberNum())
                 .invitation(UUID.randomUUID().toString())
                 .build();
 
         teamRepository.save(team);
 
         UserTeamManager utm = UserTeamManager.builder()
-                        .user(creator)
-                        .team(team)
-                        .role(UserRole.LEADER)
-                        .build();
+                .user(creator)
+                .team(team)
+                .role(UserRole.LEADER)
+                .build();
 
         userteamRepository.save(utm);
+
+        int memberCnt = userteamRepository.countByTeam(team);
 
         String invitationLink = "http://localhost:8080/icey/invitation/"+team.getInvitation();
         long days = Duration.between(LocalDateTime.now(), team.getExpiration()).toDays();
@@ -52,29 +53,29 @@ public class TeamService {
         return new TeamResponse(
                 team.getTeamId(),
                 team.getTeamName(),
-                team.getMemberNum(),
                 invitationLink,
-                dDay,
-                utm.getRole() == UserRole.MEMBER
+                dDay
         );
     }
 
-    public List<TeamResponse> getTeamsByUser(User user){ // 여기서 응답방식 수정 필요
+    public List<TeamResponse> getTeamsByUser(User user){
         List<UserTeamManager> userTeams = userteamRepository.findByUser(user);
 
         return userTeams.stream()
                 .map(utm -> {
                     Team team = utm.getTeam();
+
+                    int memberCnt = userteamRepository.countByTeam(team);
+
                     long daysLeft = ChronoUnit.DAYS.between(LocalDate.now(), team.getExpiration().toLocalDate());
                     String dDay = "D-" + daysLeft;
 
                     return new TeamResponse(
                             team.getTeamId(),
                             team.getTeamName(),
-                            team.getMemberNum(),
                             team.getInvitation(),
-                            dDay,
-                            utm.getRole() == UserRole.LEADER
+                            dDay
+
                     );
                 })
                 .collect(Collectors.toList());
@@ -98,10 +99,17 @@ public class TeamService {
     public UserTeamJoinResponse joinTeamByInvitation(User user, String invitationToken) {
         Team team = teamRepository.findByInvitation(invitationToken)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "유효하지 않은 초대 링크입니다."));
+        int memberCnt = userteamRepository.countByTeam(team);
+
+        if(memberCnt >= 10) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "팀 인원 수가 최대 10명을 초과하여 더 이상 가입할 수 없습니다.");
+        }
 
         if (userteamRepository.existsByUserAndTeam(user, team)) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "이미 팀에 가입되어 있습니다."); // ✅ 409 Conflict로 변경
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "이미 팀에 가입되어 있습니다."); //409 Conflict로 변경
         }
+
+
 
         UserTeamManager relation = UserTeamManager.builder()
                 .user(user)
@@ -124,13 +132,15 @@ public class TeamService {
         Team team = teamRepository.findById(teamId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "해당 팀을 찾을 수 없습니다."));
 
-        List<TeamMember> members = team.getMembers().stream()
+        int memberCnt = userteamRepository.countByTeam(team);
+
+        /*List<TeamMember> members = team.getMembers().stream()
                 .map(utm -> new TeamMember(
                         utm.getUser().getId(),
                         utm.getUser().getUserName(),
                         utm.getRole()
                 ))
-                .collect(Collectors.toList());
+                .collect(Collectors.toList());*/
 
         long daysLeft = ChronoUnit.DAYS.between(LocalDate.now(), team.getExpiration().toLocalDate());
         String dDay ="D-" + daysLeft;
@@ -138,10 +148,23 @@ public class TeamService {
         return new TeamDetailResponse(
                 team.getTeamId(),
                 team.getTeamName(),
-                team.getMemberNum(),
-                dDay,
-                members
+                memberCnt,
+                dDay
 
+        );
+
+    }
+
+    public InvitationTeamInfoResponse getTeamInfoByInvitation(String invitationToken){
+        Team team = teamRepository.findByInvitation(invitationToken)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "유효하지 않은 초대 링크입니다."));
+
+        int memberCnt = userteamRepository.countByTeam(team);
+
+        return new InvitationTeamInfoResponse(
+                team.getTeamId(),
+                team.getTeamName(),
+                memberCnt
         );
     }
 

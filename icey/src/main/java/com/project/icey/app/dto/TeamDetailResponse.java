@@ -10,7 +10,6 @@ import java.util.List;
 public class TeamDetailResponse {
     private Long teamId;
     private String teamName;
-    private Integer memberNum;
+    private Integer memberCount;
     private String dDay;
-    private List<TeamMember> members;
 }

@@ -25,7 +25,9 @@ public class Team {
     private Long teamId;
 
     private String teamName;
-    private Integer memberNum;
+
+    //userteamrepository에서 멤버 수 조회 메서드를 활용할 예정.
+    //private Integer memberNum; -> 제거하기로 결정.
 
     @Column(updatable = false)
     private LocalDateTime createdAt;
