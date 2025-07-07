@@ -19,7 +19,7 @@ public class SmallTalkGeneratorService {
     public SmallTalkResponse generateSmallTalkWithTitle(String target, String purpose) {
         String prompt = String.format(
                 "스몰톡 대상은 '%s'이고 목적은 '%s'야. " +
-                        "다음 형식으로 제목과 스몰톡 질문 8개와 각 질문에 대한 팁을 JSON 배열로 알려줘. 대상에 적합한 말투를 사용하여 대상과 어색함을 풀 수 있는 아이스 브레이킹이 가능하도록 해줘. 이모지는 사용하지 말아줘 \n" +
+                        "다음 형식으로 제목과 스몰톡 질문 8개와 각 질문에 대한 팁을 JSON 배열로 알려줘. 특히 팁은 제공하는 질문에 대해 어떻게 답변하면 좋을지 에 대한 팁을 알려줘. 대상에 적합한 말투를 사용하여 대상과 어색함을 풀 수 있는 아이스 브레이킹이 가능하도록 해줘. 이모지는 사용하지 말아줘 \n" +
                         "제목은 간단한 단어 형태로 ## 으로 시작하고, 질문과 팁은 아래처럼 JSON 배열로 알려줘:\n" +
                         "## 제목 텍스트\n" +
                         "```json\n" +

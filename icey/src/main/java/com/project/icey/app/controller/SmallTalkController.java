@@ -4,6 +4,10 @@ import com.project.icey.app.domain.SmallTalkList;
 import com.project.icey.app.domain.User;
 import com.project.icey.app.dto.*;
 import com.project.icey.app.service.SmallTalkService;
+import com.project.icey.global.dto.ApiResponseTemplete;
+import com.project.icey.global.exception.ErrorCode;
+import com.project.icey.global.exception.SuccessCode;
+import com.project.icey.global.exception.model.CoreApiException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -21,82 +25,90 @@ public class SmallTalkController {
     private final SmallTalkService smallTalkService;
 
     @PostMapping("/preview")
-    public ResponseEntity<SmallTalkListDto> previewSmallTalkList(
-            @AuthenticationPrincipal CustomUserDetails userDetails,
+    public ResponseEntity<ApiResponseTemplete<SmallTalkListDto>> previewSmallTalkList(
             @RequestBody SmallTalkCreateRequest request
     ) {
-        User user = userDetails.getUser();
         SmallTalkListDto preview = smallTalkService.previewSmallTalkList(
-                user, request.getTarget(), request.getPurpose()
+                null, request.getTarget(), request.getPurpose()
         );
-        return ResponseEntity.ok(preview);
+        return ApiResponseTemplete.success(SuccessCode.GET_POST_SUCCESS, preview);
     }
 
-
     @PostMapping("/save")
-    public ResponseEntity<SmallTalkListDto> saveSmallTalkList(
+    public ResponseEntity<ApiResponseTemplete<SmallTalkListDto>> saveSmallTalkList(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @RequestBody SmallTalkListSaveRequest request
     ) {
+
+        if (userDetails == null || userDetails.getUser() == null) {
+            // 인증 안 된 사용자 접근 차단 예외 발생
+            throw new CoreApiException(ErrorCode.UNAUTHORIZED_EXCEPTION);
+        }
+
         User user = userDetails.getUser();
         SmallTalkList saved = smallTalkService.saveSmallTalkList(request, user);
-        return ResponseEntity.ok(smallTalkService.getSmallTalkList(saved.getId(), user));
+        SmallTalkListDto result = smallTalkService.getSmallTalkList(saved.getId(), user);
+        return ApiResponseTemplete.success(SuccessCode.CREATE_POST_SUCCESS, result);
     }
 
-
     @GetMapping("/list")
-    public ResponseEntity<List<SmallTalkListDto>> getUserSmallTalkLists(
+    public ResponseEntity<ApiResponseTemplete<List<SmallTalkListDto>>> getUserSmallTalkLists(
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
         User user = userDetails.getUser();
         List<SmallTalkListDto> listDtos = smallTalkService.getUserSmallTalkLists(user);
-        return ResponseEntity.ok(listDtos);
+        return ApiResponseTemplete.success(SuccessCode.GET_ALL_POST_SUCCESS, listDtos);
     }
 
-
-    // 스몰톡 리스트 단건 조회
     @GetMapping("/list/{listId}")
-    public ResponseEntity<SmallTalkListDto> getSmallTalkList(
+    public ResponseEntity<ApiResponseTemplete<SmallTalkListDto>> getSmallTalkList(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @PathVariable Long listId
     ) {
-        User user = userDetails.getUser(); // null 체크는 선택적으로
-        return ResponseEntity.ok(smallTalkService.getSmallTalkList(listId, user));
+        User user = userDetails.getUser();
+        SmallTalkListDto result = smallTalkService.getSmallTalkList(listId, user);
+        return ApiResponseTemplete.success(SuccessCode.GET_POST_SUCCESS, result);
     }
 
-
-    // 질문 하나 삭제
     @DeleteMapping("/talk/{talkId}")
-    public ResponseEntity<Void> deleteQuestion(
+    public ResponseEntity<ApiResponseTemplete<Void>> deleteQuestion(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @PathVariable Long talkId
     ) {
         User user = userDetails.getUser();
         smallTalkService.deleteQuestion(talkId, user);
-        return ResponseEntity.noContent().build();
+        return ApiResponseTemplete.success(SuccessCode.DELETE_POST_SUCCESS, null);
     }
 
-    // 리스트 전체 삭제
     @DeleteMapping("/list/{listId}")
-    public ResponseEntity<Void> deleteAll(
+    public ResponseEntity<ApiResponseTemplete<Void>> deleteAll(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @PathVariable Long listId
     ) {
         User user = userDetails.getUser();
         smallTalkService.deleteAll(listId, user);
-        return ResponseEntity.noContent().build();
+        return ApiResponseTemplete.success(SuccessCode.DELETE_POST_SUCCESS, null);
     }
 
-
-    // 리스트 제목 수정
     @PutMapping("/list/{listId}/title")
-    public ResponseEntity<Void> updateTitle(
+    public ResponseEntity<ApiResponseTemplete<Void>> updateTitle(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @PathVariable Long listId,
             @RequestBody TitleUpdateRequest request
     ) {
         User user = userDetails.getUser();
         smallTalkService.updateListTitle(listId, request.getNewTitle(), user);
-        return ResponseEntity.ok().build();
+        return ApiResponseTemplete.success(SuccessCode.UPDATE_POST_SUCCESS, null);
+    }
+
+    @PutMapping("/list/{listId}/edit")
+    public ResponseEntity<ApiResponseTemplete<Void>> editSmallTalks(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @PathVariable Long listId,
+            @RequestBody SmallTalkEditRequest request
+    ) {
+        User user = userDetails.getUser();
+        smallTalkService.editSmallTalks(listId, request.getEdits(), user);
+        return ApiResponseTemplete.success(SuccessCode.UPDATE_POST_SUCCESS, null);
     }
 }
