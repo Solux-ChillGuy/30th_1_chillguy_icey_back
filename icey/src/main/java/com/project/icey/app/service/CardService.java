@@ -101,7 +101,7 @@ public class CardService {
         return toDto(cardRepo.save(clone));
     }
 
-    /* 템플릿 만든 뒤 바로 적용 */
+    /* 템플릿 만든 뒤 바로 적용 => 앞으로 새 명함 만들고 난 뒤 교체 버튼 누를 거면 사용 안 함
     public CardResponse createAndApply(Long teamId, CardRequest req, User user) {
         Card tpl = toEntity(req);
         tpl.setUser(user);
@@ -109,6 +109,8 @@ public class CardService {
         cardRepo.save(tpl);
         return applyTemplate(teamId, tpl.getId(), user);
     }
+    */
+
 
     /* ---------- 내부 유틸 ---------- */
     private Card toEntity(CardRequest r) {
