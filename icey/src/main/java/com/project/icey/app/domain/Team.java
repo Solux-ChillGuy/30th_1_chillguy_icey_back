@@ -37,6 +37,7 @@ public class Team {
     private String invitation;
 
     @OneToMany(mappedBy = "team", cascade = CascadeType.ALL, orphanRemoval = true)
+        @Builder.Default    //빌드 오류나서 우선 추가해보았습니다   -서현,,,,
     private List<UserTeamManager> members = new ArrayList<>();
 
     @PrePersist
