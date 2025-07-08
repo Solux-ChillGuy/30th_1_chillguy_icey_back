@@ -139,7 +139,7 @@ cmake-build-*/
 
 # IntelliJ
 out/
-
+icey/out/
 # mpeltonen/sbt-idea plugin
 .idea_modules/
 
@@ -281,6 +281,7 @@ buildNumber.properties
 **/nbproject/Makefile-*.mk
 **/nbproject/Package-*.bash
 build/
+icey/build/
 nbbuild/
 dist/
 nbdist/
@@ -332,6 +333,7 @@ $RECYCLE.BIN/
 *.lnk
 
 ### Gradle ###
+icey/.gradle/
 .gradle
 .gradle/
 **/build/
