@@ -33,6 +33,10 @@ public class BalanceGameService {
         Team team = teamRepository.findById(teamId)
                 .orElseThrow(() -> new CoreApiException(ErrorCode.RESOURCE_NOT_FOUND));
 
+        long gameCount = balanceGameRepository.countByTeam_TeamId(teamId);
+        if (gameCount >= 2) {
+            throw new CoreApiException(ErrorCode.GAME_LIMIT_EXCEEDED); // 새로 정의한 에러 코드
+        }
         String prompt = """
         밸런스 게임 주제를 만들어줘. 형식은 다음과 같아.
         선택지는 긴 문장 형태가 아니라 단어 혹은 두 단어 정도로 되도록.

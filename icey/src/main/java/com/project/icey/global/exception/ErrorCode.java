@@ -88,6 +88,7 @@ public enum ErrorCode {
     RESOURCE_NOT_FOUND(HttpStatus.NOT_FOUND, "게시글을 찾을 수 없습니다."),
 
     ALREADY_VOTED(HttpStatus.BAD_REQUEST,"투표는 1번 또는 2번만 가능합니다."),
+    GAME_LIMIT_EXCEEDED(HttpStatus.BAD_REQUEST, "팀당 생성 가능한 게임 수를 초과했습니다."),
 
     INVALID_ENUM_VALUE(HttpStatus.BAD_REQUEST, "올바른 상태 값을 확인하세요. (가능한 값: Pending, Accepted, Rejected)"),
 ;
