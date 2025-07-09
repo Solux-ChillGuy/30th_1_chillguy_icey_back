@@ -20,7 +20,7 @@ public enum SuccessCode {
     EMAIL_CERT_MESSAGE_SUCCESS(HttpStatus.OK, "이메일 전송이 완료되었습니다."),
     EMAIL_VERIFY_SUCCESS(HttpStatus.OK, "이메일 인증에 성공했습니다"),
     LETTER_WRITE_INFO_SUCCESS(HttpStatus.OK, "쪽지 작성화면 정보를 불러왔습니다."),
-
+    GET_LETTER_SUCCESS(HttpStatus.OK, "쪽지(들)을 불러오는데 성공했습니다"),
 
     // 201 Created, Delete
     CREATE_POST_SUCCESS(HttpStatus.CREATED, "게시글 생성이 완료되었습니다."),

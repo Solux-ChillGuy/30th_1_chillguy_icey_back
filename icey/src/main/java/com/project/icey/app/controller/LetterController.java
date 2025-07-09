@@ -49,20 +49,24 @@ public class LetterController {
 
     //쪽지 상세 조회
     @GetMapping("/teams/{teamId}/letters/{letterId}")
-    public LetterDetailResponse getLetterDetail(@PathVariable Long teamId, @PathVariable Long letterId, @AuthenticationPrincipal CustomUserDetails userDetails) {
+    public ResponseEntity<ApiResponseTemplete<LetterDetailResponse>> getLetterDetail(@PathVariable Long teamId, @PathVariable Long letterId, @AuthenticationPrincipal CustomUserDetails userDetails) {
 
         Long currentUserId = userDetails.getUser().getId();
 
-        return letterService.readLetter(teamId, letterId, currentUserId);
+        LetterDetailResponse response = letterService.readLetter(teamId, letterId, currentUserId);
+
+        return ApiResponseTemplete.success(SuccessCode.GET_LETTER_SUCCESS, response);
     }
 
     //쪽지 목록 조회
     @GetMapping("/teams/{teamId}/letters/received")
-    public List<LetterSummaryResponse> getReceivedLetters(@PathVariable Long teamId,
+    public ResponseEntity<ApiResponseTemplete<List<LetterSummaryResponse>>> getReceivedLetters(@PathVariable Long teamId,
                                                           @AuthenticationPrincipal CustomUserDetails userDetails) {
         Long currentUserId = userDetails.getUser().getId();
 
-        return letterService.getReceivedLetters(teamId, currentUserId);
+        List<LetterSummaryResponse> response = letterService.getReceivedLetters(teamId, currentUserId);
+
+        return ApiResponseTemplete.success(SuccessCode.GET_LETTER_SUCCESS, response);
     }
 
 }
