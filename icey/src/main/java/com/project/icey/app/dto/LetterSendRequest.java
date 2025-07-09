@@ -6,6 +6,5 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 public class LetterSendRequest {
-    private Long receiverCardId;
     private String content;
 }

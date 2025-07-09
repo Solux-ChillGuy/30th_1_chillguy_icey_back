@@ -2,6 +2,7 @@ package com.project.icey.app.controller;
 
 import com.project.icey.app.domain.User;
 import com.project.icey.app.dto.CustomUserDetails;
+import com.project.icey.app.dto.LetterDetailResponse;
 import com.project.icey.app.dto.LetterSendRequest;
 import com.project.icey.app.dto.WriteInfoResponse;
 import com.project.icey.app.service.LetterService;
@@ -12,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+@RequestMapping("/api")
 @RestController
 @RequiredArgsConstructor
 public class LetterController {
@@ -19,9 +21,9 @@ public class LetterController {
     private final LetterService letterService;
 
     //쪽지 작성화면 조회
-    @GetMapping("/teams/{team_id}/cards/{card_id}/letters")
-    public ResponseEntity<ApiResponseTemplete<WriteInfoResponse>> getWriteInfo(@PathVariable("team_id") Long teamId,
-                                          @PathVariable("card_id") Long receiverCardId,
+    @GetMapping("/teams/{teamId}/cards/{cardId}/letters")
+    public ResponseEntity<ApiResponseTemplete<WriteInfoResponse>> getWriteInfo(@PathVariable Long teamId,
+                                          @PathVariable("cardId") Long receiverCardId,
                                           @AuthenticationPrincipal CustomUserDetails userDetails) {
         User user = userDetails.getUser();
         WriteInfoResponse response = letterService.getWriteInfo(teamId, receiverCardId, user.getId());
@@ -30,19 +32,29 @@ public class LetterController {
     }
 
     //쪽지 보내기
-    @PostMapping("/teams/{team_id}/cards/{card_id}/letters")
-    public ResponseEntity<ApiResponseTemplete<Void>> sendLetter(@PathVariable("team_id") Long teamId,
+    @PostMapping("/teams/{teamId}/cards/{cardId}/letters")
+    public ResponseEntity<ApiResponseTemplete<Void>> sendLetter(@PathVariable Long teamId, @PathVariable("cardId") Long receiverCardId,
                                            @RequestBody LetterSendRequest request,
                                            @AuthenticationPrincipal CustomUserDetails userDetails) {
         Long currentUserId = userDetails.getUser().getId();
 
         letterService.sendLetter(
                 teamId,
-                request.getReceiverCardId(),
+                receiverCardId,
                 currentUserId,
                 request.getContent()
         );
 
         return ApiResponseTemplete.success(SuccessCode.LETTER_SEND_SUCCESS, null);
     }
+
+    //쪽지 상세 조회
+    @GetMapping("/teams/{teamId}/letters/{letterId}")
+    public LetterDetailResponse getLetterDetail(@PathVariable Long teamId, @PathVariable Long letterId, @AuthenticationPrincipal CustomUserDetails userDetails) {
+
+        Long currentUserId = userDetails.getUser().getId();
+
+        return letterService.readLetter(teamId, letterId, currentUserId);
+    }
+
 }

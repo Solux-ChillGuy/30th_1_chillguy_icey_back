@@ -3,6 +3,7 @@ package com.project.icey.app.service;
 import com.project.icey.app.domain.Card;
 import com.project.icey.app.domain.Letter;
 import com.project.icey.app.domain.Team;
+import com.project.icey.app.dto.LetterDetailResponse;
 import com.project.icey.app.dto.WriteInfoResponse;
 import com.project.icey.app.repository.CardRepository;
 import com.project.icey.app.repository.LetterRepository;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -26,12 +28,14 @@ public class LetterService {
 
         Team team = teamRepository.findById(teamId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 팀이 존재하지 않습니다."));
+
         Card receiver = cardRepo.findById(receiverCardId)
                 .orElseThrow(() -> new IllegalArgumentException("받는 명함이 존재하지 않습니다."));
 
         Card sender = cardRepo.findByTeam_TeamIdAndUserId(teamId, currentUserId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 팀에서 보낼 명함이 없습니다."));
 
+        //이렇게 되면 현재 사실상 보내는 사람과 받는 사람이 같은 팀내에 있는가에 대한 유효성 검사가 빠진 상태임.
         return new WriteInfoResponse(
                 new WriteInfoResponse.CardInfo(sender.getId(), sender.getNickname()),
                 new WriteInfoResponse.CardInfo(receiver.getId(), receiver.getNickname())
@@ -61,5 +65,27 @@ public class LetterService {
                 .build();
 
         letterRepository.save(letter);
+    }
+
+    //쪽지 상세 조회
+    @Transactional
+    public LetterDetailResponse readLetter(Long teamId, Long letterId, Long receiverUserId) {
+        Team team = teamRepository.findById(teamId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 팀이 존재하지 않습니다."));
+
+        Card myCard = cardRepo.findByTeam_TeamIdAndUserId(teamId, receiverUserId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 팀에 서 내 명함이 존재하지 않습니다."));
+
+        Letter letter = letterRepository.findByLetterIdAndReceiverCard_Id(letterId, myCard.getId())
+                .orElseThrow(() -> new IllegalArgumentException("쪽지가 존재하지 않거나 권한이 없습니다."));
+
+        letter.setRead(true);
+
+        return new LetterDetailResponse(
+                letter.getSenderCard().getNickname(),
+                letter.getContent()
+        );
+
+
     }
 }
