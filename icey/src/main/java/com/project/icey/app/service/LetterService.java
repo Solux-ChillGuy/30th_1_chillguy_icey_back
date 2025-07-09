@@ -4,6 +4,7 @@ import com.project.icey.app.domain.Card;
 import com.project.icey.app.domain.Letter;
 import com.project.icey.app.domain.Team;
 import com.project.icey.app.dto.LetterDetailResponse;
+import com.project.icey.app.dto.LetterSummaryResponse;
 import com.project.icey.app.dto.WriteInfoResponse;
 import com.project.icey.app.repository.CardRepository;
 import com.project.icey.app.repository.LetterRepository;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -87,5 +89,25 @@ public class LetterService {
         );
 
 
+    }
+
+    //받은 쪽지 목록 조회
+    @Transactional(readOnly = true)
+    public List<LetterSummaryResponse> getReceivedLetters(Long teamId, Long receiverUserId) {
+
+        Team team = teamRepository.findById(teamId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 팀이 존재하지 않습니다."));
+
+        Card myCard = cardRepo.findByTeam_TeamIdAndUserId(teamId, receiverUserId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 팀에서 내 명함이 존재하지 않습니다."));
+
+        return letterRepository.findByTeam_TeamIdAndReceiverCard_IdOrderByCreatedAtDesc(teamId, myCard.getId())
+                .stream()
+                .map(letter -> new LetterSummaryResponse(
+                        letter.getLetterId(),
+                        letter.getSenderCard().getNickname(),
+                        letter.isRead()
+                ))
+                .toList();
     }
 }

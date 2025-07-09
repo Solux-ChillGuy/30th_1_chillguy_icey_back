@@ -17,4 +17,8 @@ public interface LetterRepository extends JpaRepository<Letter, Long> {
     @Query("SELECT l FROM Letter l JOIN FETCH l.senderCard WHERE l.letterId = :letterId AND l.receiverCard.id = :receiverCardId")
     Optional<Letter> findByLetterIdAndReceiverCard_Id(Long letterId, Long receiverCardId);
 
+    //특정 팀 페이지 내에서의 받은 쪽지 목록
+    List<Letter> findByTeam_TeamIdAndReceiverCard_IdOrderByCreatedAtDesc(Long teamId, Long receiverCardId);
+
+
 }

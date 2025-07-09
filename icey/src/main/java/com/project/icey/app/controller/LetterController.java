@@ -1,10 +1,7 @@
 package com.project.icey.app.controller;
 
 import com.project.icey.app.domain.User;
-import com.project.icey.app.dto.CustomUserDetails;
-import com.project.icey.app.dto.LetterDetailResponse;
-import com.project.icey.app.dto.LetterSendRequest;
-import com.project.icey.app.dto.WriteInfoResponse;
+import com.project.icey.app.dto.*;
 import com.project.icey.app.service.LetterService;
 import com.project.icey.global.dto.ApiResponseTemplete;
 import com.project.icey.global.exception.SuccessCode;
@@ -12,6 +9,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RequestMapping("/api")
 @RestController
@@ -55,6 +54,15 @@ public class LetterController {
         Long currentUserId = userDetails.getUser().getId();
 
         return letterService.readLetter(teamId, letterId, currentUserId);
+    }
+
+    //쪽지 목록 조회
+    @GetMapping("/teams/{teamId}/letters/received")
+    public List<LetterSummaryResponse> getReceivedLetters(@PathVariable Long teamId,
+                                                          @AuthenticationPrincipal CustomUserDetails userDetails) {
+        Long currentUserId = userDetails.getUser().getId();
+
+        return letterService.getReceivedLetters(teamId, currentUserId);
     }
 
 }
