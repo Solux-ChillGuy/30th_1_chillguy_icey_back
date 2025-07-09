@@ -7,12 +7,13 @@ import lombok.Getter;
 @AllArgsConstructor
 public class WriteInfoResponse {
     private CardInfo senderCard;
-    private CardInfo receiverCard;
+    private CardResponse receiverCard;
 
     @Getter
     @AllArgsConstructor
     public static class CardInfo {
-        private Long id;
+        private Long cardId;
         private String nickname;
     }
+
 }

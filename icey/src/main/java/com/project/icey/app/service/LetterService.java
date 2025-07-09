@@ -3,6 +3,7 @@ package com.project.icey.app.service;
 import com.project.icey.app.domain.Card;
 import com.project.icey.app.domain.Letter;
 import com.project.icey.app.domain.Team;
+import com.project.icey.app.dto.CardResponse;
 import com.project.icey.app.dto.LetterDetailResponse;
 import com.project.icey.app.dto.LetterSummaryResponse;
 import com.project.icey.app.dto.WriteInfoResponse;
@@ -38,9 +39,25 @@ public class LetterService {
                 .orElseThrow(() -> new IllegalArgumentException("해당 팀에서 보낼 명함이 없습니다."));
 
         //이렇게 되면 현재 사실상 보내는 사람과 받는 사람이 같은 팀내에 있는가에 대한 유효성 검사가 빠진 상태임.
+        if (!receiver.getTeam().getTeamId().equals(teamId)) {
+            throw new IllegalArgumentException("받는 명함이 해당 팀에 속해있지 않습니다.");
+        }
+
+        CardResponse receiverCardResponse = new CardResponse(
+                receiver.getId(),
+                receiver.getNickname(),
+                receiver.getAnimal(),
+                receiver.getProfileColor(),
+                receiver.getAccessory(),
+                receiver.getMbti(),
+                receiver.getHobby(),
+                receiver.getSecretTip(),
+                receiver.getTmi()
+        );
+
         return new WriteInfoResponse(
                 new WriteInfoResponse.CardInfo(sender.getId(), sender.getNickname()),
-                new WriteInfoResponse.CardInfo(receiver.getId(), receiver.getNickname())
+                receiverCardResponse
         );
     }
 
