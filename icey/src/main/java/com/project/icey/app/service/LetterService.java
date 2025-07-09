@@ -43,6 +43,7 @@ public class LetterService {
             throw new IllegalArgumentException("받는 명함이 해당 팀에 속해있지 않습니다.");
         }
 
+
         CardResponse receiverCardResponse = new CardResponse(
                 receiver.getId(),
                 receiver.getNickname(),
@@ -55,9 +56,13 @@ public class LetterService {
                 receiver.getTmi()
         );
 
+        String receiverTeamName = receiver.getTeam() != null ? receiver.getTeam().getTeamName() : null;
+
+
         return new WriteInfoResponse(
                 new WriteInfoResponse.CardInfo(sender.getId(), sender.getNickname()),
-                receiverCardResponse
+                receiverCardResponse,
+                receiverTeamName
         );
     }
 

@@ -8,6 +8,7 @@ import lombok.Getter;
 public class WriteInfoResponse {
     private CardInfo senderCard;
     private CardResponse receiverCard;
+    private String receiverTeamName;
 
     @Getter
     @AllArgsConstructor
