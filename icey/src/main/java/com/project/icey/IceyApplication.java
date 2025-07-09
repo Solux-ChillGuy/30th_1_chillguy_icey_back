@@ -11,5 +11,5 @@ public class IceyApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(IceyApplication.class, args);
 	}
-
 }
+
