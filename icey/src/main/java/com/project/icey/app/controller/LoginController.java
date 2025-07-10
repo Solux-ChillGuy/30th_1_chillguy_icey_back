@@ -1,7 +1,10 @@
 package com.project.icey.app.controller;
 
+import com.project.icey.app.domain.User;
+import com.project.icey.app.dto.LoginRequestDto;
 import com.project.icey.app.repository.UserRepository;
 import com.project.icey.global.dto.ApiResponseTemplete;
+import com.project.icey.global.exception.*;
 import com.project.icey.global.security.TokenService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -12,7 +15,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.view.RedirectView;
 
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api")
@@ -83,4 +88,28 @@ public class LoginController {
         return new RedirectView("/oauth2/authorization/kakao");
     }
 
+    @PostMapping("/login")
+    public ResponseEntity<ApiResponseTemplete<Map<String, String>>> login(@RequestBody LoginRequestDto loginRequest) {
+        // 이메일로 사용자 찾기
+        Optional<User> userOpt = userRepository.findByEmail(loginRequest.getEmail());
+
+        // 사용자가 존재하지 않으면 404 반환
+        if (userOpt.isEmpty()) {
+            return ApiResponseTemplete.error(ErrorCode.NOT_FOUND_USER_EXCEPTION, null);
+        }
+
+        User user = userOpt.get();
+
+        // accessToken 생성
+        String accessToken = tokenService.createAccessToken(user.getEmail());
+
+        // 필요한 데이터만 포함해서 반환
+        Map<String, String> responseData = new HashMap<>();
+        responseData.put("email", user.getEmail());
+        responseData.put("userId", String.valueOf(user.getId()));
+        responseData.put("accessToken", accessToken);
+
+        // 성공적인 응답 반환
+        return ApiResponseTemplete.success(SuccessCode.LOGIN_USER_SUCCESS, responseData);
+    }
 }

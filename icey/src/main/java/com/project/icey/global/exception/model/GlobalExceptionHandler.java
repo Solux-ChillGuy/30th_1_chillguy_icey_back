@@ -1,8 +1,9 @@
-package com.project.icey.global.exception;
+package com.project.icey.global.exception.model;
 
 
 import com.project.icey.global.dto.ApiResponseTemplete;
-import com.project.icey.global.exception.model.CoreApiException;
+import com.project.icey.global.exception.ErrorCode;
+import com.project.icey.global.exception.InvalidTokenException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -68,6 +69,12 @@ public class GlobalExceptionHandler {
 
         return ApiResponseTemplete.error(errorCode, e.getReason());
     }
+
+    @ExceptionHandler(InvalidTokenException.class)
+    public ResponseEntity<ApiResponseTemplete<String>> handleInvalidTokenException(InvalidTokenException e) {
+        return ApiResponseTemplete.error(ErrorCode.UNAUTHORIZED_EXCEPTION, e.getMessage());
+    }
+
 
     private ErrorCode mapHttpStatusToErrorCode(HttpStatus status) {
         switch (status) {

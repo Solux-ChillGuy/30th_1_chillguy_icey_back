@@ -1,11 +1,13 @@
 package com.project.icey.app.controller;
 
 import com.project.icey.app.domain.BalanceGame;
+import com.project.icey.app.domain.NotificationType;
 import com.project.icey.app.dto.BalanceGameDto;
 import com.project.icey.app.dto.BalanceGameResultDto;
 import com.project.icey.app.dto.BalanceGameVoteRequest;
 import com.project.icey.app.dto.CustomUserDetails;
 import com.project.icey.app.service.BalanceGameService;
+import com.project.icey.app.service.NotificationService;
 import com.project.icey.global.dto.ApiResponseTemplete;
 import com.project.icey.global.exception.ErrorCode;
 import com.project.icey.global.exception.SuccessCode;
@@ -21,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 public class BalanceGameController {
 
     private final BalanceGameService balanceGameService;
+    private final NotificationService notificationService;
 
     // 게임 생성
     // 반환 타입을 BalanceGameDto로 변경
@@ -31,6 +34,14 @@ public class BalanceGameController {
     ) {
         BalanceGame game = balanceGameService.createBalanceGame(teamId);
         BalanceGameDto dto = BalanceGameDto.from(game);
+
+        Long userId = userDetails.getUser().getId();
+        notificationService.sendNotification(
+                userId,
+                NotificationType.BALANCE_GAME_CREATED,
+                "새로운 밸런스 게임이 생성되었습니다!"
+        );
+
         return ApiResponseTemplete.success(SuccessCode.CREATE_POST_SUCCESS, dto);
     }
 
