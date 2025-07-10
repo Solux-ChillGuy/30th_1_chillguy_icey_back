@@ -26,6 +26,6 @@ public class Schedule {
 
     //여러 후보들 받을거니까
     @OneToMany(mappedBy = "schedule", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<CandidateTimeSlot> candidateTimeSlots = new ArrayList<>();
+    private List<CandidateDate> candidateDates = new ArrayList<>();
 
 }
