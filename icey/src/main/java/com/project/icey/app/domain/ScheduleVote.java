@@ -13,5 +13,5 @@ public class ScheduleVote {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "CANDIDATE_TIME_SLOT_ID")
-    private CandidateTimeZone candidateTimeZone;
+    private CandidateTimeSlot candidateTimeSlot;
 }

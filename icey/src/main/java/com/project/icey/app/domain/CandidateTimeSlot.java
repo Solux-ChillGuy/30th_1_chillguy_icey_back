@@ -6,7 +6,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CandidateTimeZone {
+public class CandidateTimeSlot {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
