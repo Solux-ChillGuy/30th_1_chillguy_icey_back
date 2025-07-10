@@ -3,6 +3,8 @@ package com.project.icey.app.domain;
 import jakarta.persistence.*;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 public class CandidateTimeZone {
 
@@ -19,4 +21,6 @@ public class CandidateTimeZone {
     private Schedule schedule;
 
     //이제 실제 투표와 연결
+    @OneToMany(mappedBy = "candidateTimeSlot", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ScheduleVote> votes = new ArrayList<>();
 }

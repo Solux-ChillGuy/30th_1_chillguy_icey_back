@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Schedule {
 
@@ -23,5 +25,7 @@ public class Schedule {
     private LocalDateTime createdAt;
 
     //여러 후보들 받을거니까
+    @OneToMany(mappedBy = "schedule", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<CandidateTimeZone> candidateTimeZones = new ArrayList<>();
 
 }
