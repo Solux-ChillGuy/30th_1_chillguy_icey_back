@@ -17,6 +17,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/teams/{teamId}/balance-game")
@@ -25,8 +27,17 @@ public class BalanceGameController {
     private final BalanceGameService balanceGameService;
     private final NotificationService notificationService;
 
+    // 전체 조회
+    @GetMapping
+    public ResponseEntity<ApiResponseTemplete<List<BalanceGameResultDto>>> getAllBalanceGames(
+            @PathVariable Long teamId
+    ) {
+        List<BalanceGameResultDto> results = balanceGameService.getAllGameResultsByTeam(teamId);
+        return ApiResponseTemplete.success(SuccessCode.GET_POST_SUCCESS, results);
+    }
+
+
     // 게임 생성
-    // 반환 타입을 BalanceGameDto로 변경
     @PostMapping("/generate")
     public ResponseEntity<ApiResponseTemplete<BalanceGameDto>> createBalanceGame(
             @AuthenticationPrincipal CustomUserDetails userDetails,
@@ -69,5 +80,15 @@ public class BalanceGameController {
     ) {
         BalanceGameResultDto result = balanceGameService.getResult(gameId);
         return ApiResponseTemplete.success(SuccessCode.GET_POST_SUCCESS, result);
+    }
+
+    @DeleteMapping("/{gameId}/delete")
+    public ResponseEntity<?> deleteBalanceGame(
+            @PathVariable Long teamId,
+            @PathVariable Long gameId,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        balanceGameService.deleteBalanceGame(gameId);
+        return ResponseEntity.noContent().build(); // 204 No Content
     }
 }

@@ -11,6 +11,7 @@ import com.project.icey.global.exception.InvalidTokenException;
 import com.project.icey.global.security.TokenService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -29,7 +30,7 @@ public class NotificationController {
     private final TokenService tokenService;
     private final EmitterRepository emitterRepository;
 
-    @GetMapping("/subscribe")
+    @GetMapping(value = "/subscribe", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter subscribe(@RequestParam String token) {
         if (!tokenService.validateToken(token)) {
             throw new InvalidTokenException("유효하지 않은 토큰입니다.");
@@ -41,21 +42,21 @@ public class NotificationController {
 
         return sseEmitterService.subscribe(userId);
     }
-/*
-    @PostMapping("/broadcast")
-    public void broadcast(@RequestParam String token, @RequestBody Notification notification) {
-        if (!tokenService.validateToken(token)) {
-            throw new InvalidTokenException("유효하지 않은 토큰입니다.");
-        }
-        Long userId = tokenService.extractUserId(token)
-                .orElseThrow(() -> new InvalidTokenException("토큰에서 사용자 ID를 찾을 수 없습니다."));
+    /*
+        @PostMapping("/broadcast")
+        public void broadcast(@RequestParam String token, @RequestBody Notification notification) {
+            if (!tokenService.validateToken(token)) {
+                throw new InvalidTokenException("유효하지 않은 토큰입니다.");
+            }
+            Long userId = tokenService.extractUserId(token)
+                    .orElseThrow(() -> new InvalidTokenException("토큰에서 사용자 ID를 찾을 수 없습니다."));
 
-        sseEmitterService.broadcast(userId, notification);
-    }
-*/
+            sseEmitterService.broadcast(userId, notification);
+        }
+    */
     @PostMapping("/broadcast")
     public void broadcast(@AuthenticationPrincipal CustomUserDetails userDetails,
-                        @RequestBody Notification notification) {
+                          @RequestBody Notification notification) {
         User user = userDetails.getUser();
         Long userId = user.getId();
         // sseEmitterService.broadcast(userId, notification);
@@ -78,4 +79,3 @@ public class NotificationController {
     }
 
 }
-

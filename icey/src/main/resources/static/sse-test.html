@@ -24,7 +24,6 @@
 <h2>📢 알림 메시지</h2>
 <div id="sse-url"></div>
 <div id="messages"></div>
-
 <script>
     const token = localStorage.getItem('accessToken');
 
@@ -33,7 +32,6 @@
         throw new Error('No token');
     }
 
-    // JWT payload 추출
     let payload;
     try {
         payload = JSON.parse(atob(token.split('.')[1]));
@@ -42,7 +40,6 @@
         throw e;
     }
 
-    // 토큰 내 userId 필드명 확인 (userId 또는 id)
     const userId = payload.userId || payload.id;
     if (!userId) {
         alert('토큰에 userId 정보가 없습니다.');
@@ -52,13 +49,11 @@
     const messages = document.getElementById('messages');
     const sseUrlDiv = document.getElementById('sse-url');
 
-    // SSE 구독 URL 표시 (토큰 포함)
-    const sseUrl = `http://localhost:8080/notification/subscribe?token=${token}`;
+    const sseUrl = `http://localhost:8080/api/notification/subscribe?token=${token}`;
     sseUrlDiv.textContent = `SSE 연결 URL: ${sseUrl}`;
 
-    // 기존 안읽은 알림 조회 및 출력
     function loadUnreadNotifications() {
-        fetch(`http://localhost:8080/notification/unread?userId=${userId}`, {
+        fetch(`http://localhost:8080/api/notification/unread`, {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
@@ -87,13 +82,12 @@
         });
     }
 
-    // SSE 연결 및 실시간 알림 처리
     function connectSse() {
         const eventSource = new EventSource(sseUrl);
 
         eventSource.onopen = () => console.log('SSE 연결 성공');
-/*
-        eventSource.onmessage = function(event) {
+
+        eventSource.addEventListener("sse", function(event) {
             try {
                 const data = JSON.parse(event.data);
                 const p = document.createElement('p');
@@ -102,18 +96,7 @@
             } catch (e) {
                 console.error('SSE 메시지 파싱 오류:', event.data);
             }
-        };
-*/
-        eventSource.addEventListener("sse", function(event) {
-        try {
-            const data = JSON.parse(event.data);
-            const p = document.createElement('p');
-            p.textContent = `[${data.type}] ${data.content}`;
-            messages.appendChild(p);
-        } catch (e) {
-            console.error('SSE(sse) 메시지 파싱 오류:', event.data);
-        }
-    });
+        });
 
         eventSource.onerror = function(err) {
             console.error('SSE 연결 오류:', err);
@@ -125,7 +108,6 @@
         };
     }
 
-    // 초기 로딩 및 SSE 연결
     loadUnreadNotifications();
     connectSse();
 </script>
