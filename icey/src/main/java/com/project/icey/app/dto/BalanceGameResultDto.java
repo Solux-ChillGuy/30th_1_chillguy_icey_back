@@ -10,6 +10,7 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 public class BalanceGameResultDto {
+    private long id;
     private String option1;
     private long option1Count;
     private String option2;

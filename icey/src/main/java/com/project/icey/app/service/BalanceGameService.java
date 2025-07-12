@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -123,11 +124,43 @@ public class BalanceGameService {
         long total = option1Count + option2Count;
 
         return new BalanceGameResultDto(
+                gameId,
                 game.getOption1(),
                 option1Count,
                 game.getOption2(),
                 option2Count,
                 total
         );
+    }
+
+    @Transactional
+    public void deleteBalanceGame(Long gameId) {
+        BalanceGame game = balanceGameRepository.findById(gameId)
+                .orElseThrow(() -> new CoreApiException(ErrorCode.RESOURCE_NOT_FOUND));
+
+        // 연관된 투표 삭제 (필요시)
+        balanceGameVoteRepository.deleteByBalanceGameId(gameId);
+        // 게임 삭제
+        balanceGameRepository.delete(game);
+    }
+
+    public List<BalanceGameResultDto> getAllGameResultsByTeam(Long teamId) {
+        List<BalanceGame> games = balanceGameRepository.findByTeam_TeamId(teamId);
+
+        return games.stream()
+                .map(game -> {
+                    long option1Count = balanceGameVoteRepository.countByBalanceGameIdAndSelectedOption(game.getId(), 1);
+                    long option2Count = balanceGameVoteRepository.countByBalanceGameIdAndSelectedOption(game.getId(), 2);
+
+                    return new BalanceGameResultDto(
+                            game.getId(),
+                            game.getOption1(),
+                            option1Count,
+                            game.getOption2(),
+                            option2Count,
+                            option1Count + option2Count
+                    );
+                })
+                .collect(Collectors.toList());
     }
 }
