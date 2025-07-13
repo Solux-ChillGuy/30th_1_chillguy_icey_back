@@ -1,7 +1,8 @@
 package com.project.icey.app.dto;
 
-import lombok.Data;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDate;
@@ -11,12 +12,16 @@ import java.util.List;
 
 @Getter
 @Setter
-public class ScheduleVoteRequest {
+@NoArgsConstructor
+@AllArgsConstructor
+public class ScheduleVoteDTO {
 
     private List<VoteByDate> votes;
 
     @Getter
     @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
     public static class VoteByDate {
         private LocalDate date;
         private List<Integer> hours;

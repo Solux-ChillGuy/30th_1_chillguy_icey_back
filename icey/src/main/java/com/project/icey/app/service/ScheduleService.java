@@ -2,16 +2,17 @@ package com.project.icey.app.service;
 
 import com.project.icey.app.domain.*;
 import com.project.icey.app.dto.ScheduleCreateRequest;
-import com.project.icey.app.dto.ScheduleVoteRequest;
+import com.project.icey.app.dto.ScheduleVoteDTO;
 import com.project.icey.app.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -90,7 +91,7 @@ public class ScheduleService {
 
     //약속 잡기 투표
     @Transactional
-    public void submitVote(Long teamId, Long userId, ScheduleVoteRequest request){
+    public void submitVote(Long teamId, Long userId, ScheduleVoteDTO request){
         // 팀 구성원인지 확인
         UserTeamManager voter = utmRepository.findByUserIdAndTeam_TeamId(userId, teamId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 유저는 팀 멤버가 아닙니다."));
@@ -105,7 +106,7 @@ public class ScheduleService {
         List<ScheduleVote> newVotes = new ArrayList<>();
 
         //먼저 날짜별로 이제 해당 타임 슬로
-        for (ScheduleVoteRequest.VoteByDate voteByDate : request.getVotes()) {
+        for (ScheduleVoteDTO.VoteByDate voteByDate : request.getVotes()) {
             CandidateDate candidateDate = candidateDateRepository
                     .findBySchedule_ScheduleIdAndDate(schedule.getScheduleId(), voteByDate.getDate())
                     .orElseThrow(() -> new IllegalArgumentException("해당 날짜 후보가 존재하지 않습니다."));
@@ -126,5 +127,33 @@ public class ScheduleService {
         scheduleVoteRepository.saveAll(newVotes);
 
     }
+    @Transactional(readOnly = true)
+    public ScheduleVoteDTO getMyVotes(Long teamId, Long userId) {
+        // 팀 구성원인지 확인
+        UserTeamManager voter = utmRepository.findByUserIdAndTeam_TeamId(userId, teamId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 유저는 팀 멤버가 아닙니다."));
+
+        // 스케줄 조회
+        Schedule schedule = scheduleRepository.findByTeam_TeamId(teamId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 팀에 스케줄이 존재하지 않습니다."));
+
+        // 유저가 투표한 ScheduleVote 전부 조회
+        List<ScheduleVote> myVotes = scheduleVoteRepository.findByVoterId(voter.getId());
+
+        // 날짜별 그룹핑
+        Map<LocalDate, List<Integer>> grouped = myVotes.stream()
+                .collect(Collectors.groupingBy(
+                        vote -> vote.getTimeSlot().getCandidateDate().getDate(),
+                        Collectors.mapping(vote -> vote.getTimeSlot().getHour(), Collectors.toList())
+                ));
+
+        List<ScheduleVoteDTO.VoteByDate> result = grouped.entrySet().stream()
+                .sorted(Map.Entry.comparingByKey())
+                .map(entry -> new ScheduleVoteDTO.VoteByDate(entry.getKey(), entry.getValue()))
+                .toList();
+
+        return new ScheduleVoteDTO(result);
+    }
+
 
 }
