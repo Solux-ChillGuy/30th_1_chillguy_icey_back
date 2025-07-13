@@ -25,4 +25,6 @@ public interface UserTeamRepository extends JpaRepository<UserTeamManager, Long>
     //팀 별 멤버수 조회하는 메서드
     int countByTeam(Team team);
 
+    Optional<UserTeamManager> findByUserIdAndTeam_TeamId(Long userId, Long teamId);
+
 }

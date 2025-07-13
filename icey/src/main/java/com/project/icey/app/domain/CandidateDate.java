@@ -1,11 +1,18 @@
 package com.project.icey.app.domain;
 
 import jakarta.persistence.*;
+import lombok.*;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+@Entity
+@Getter
+@Setter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
+@Builder
 public class CandidateDate {
 
     @Id
@@ -19,6 +26,6 @@ public class CandidateDate {
     private Schedule schedule;
 
     //이제 실제 투표와 연결
-    @OneToMany(mappedBy = "candidateTimeSlot", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "candidateDate", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ScheduleVote> votes = new ArrayList<>();
 }

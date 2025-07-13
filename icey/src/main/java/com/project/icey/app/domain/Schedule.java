@@ -1,12 +1,20 @@
 package com.project.icey.app.domain;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.NoArgsConstructor;
+import org.hibernate.annotations.AttributeBinderType;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+@Entity
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class Schedule {
 
     @Id
