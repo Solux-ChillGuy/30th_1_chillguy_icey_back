@@ -27,5 +27,5 @@ public class CandidateDate {
 
     //이제 실제 투표와 연결
     @OneToMany(mappedBy = "candidateDate", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ScheduleVote> votes = new ArrayList<>();
+    private List<ScheduleTimeSlot> timeSlots = new ArrayList<>();
 }
