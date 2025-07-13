@@ -3,6 +3,7 @@ package com.project.icey.app.controller;
 import com.project.icey.app.dto.CustomUserDetails;
 import com.project.icey.app.dto.ScheduleCreateRequest;
 import com.project.icey.app.dto.ScheduleVoteDTO;
+import com.project.icey.app.dto.ScheduleVoteSummaryResponse;
 import com.project.icey.app.service.ScheduleService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -40,6 +41,13 @@ public class ScheduleController {
     public ResponseEntity<?> getMyVotes(@PathVariable Long teamId,
                                                              @AuthenticationPrincipal CustomUserDetails userDetails) {
         ScheduleVoteDTO response = scheduleService.getMyVotes(teamId, userDetails.getUser().getId());
+        return ResponseEntity.ok(response);
+    }
+
+    //약속 잡기 투표 현황 조회
+    @GetMapping("/{teamId}/schedule/votes")
+    public ResponseEntity<?> getVoteSummary(@PathVariable Long teamId, @AuthenticationPrincipal CustomUserDetails userDetails) {
+        ScheduleVoteSummaryResponse response = scheduleService.getVoteSummary(teamId);
         return ResponseEntity.ok(response);
     }
 

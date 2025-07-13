@@ -3,6 +3,7 @@ package com.project.icey.app.service;
 import com.project.icey.app.domain.*;
 import com.project.icey.app.dto.ScheduleCreateRequest;
 import com.project.icey.app.dto.ScheduleVoteDTO;
+import com.project.icey.app.dto.ScheduleVoteSummaryResponse;
 import com.project.icey.app.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -127,20 +128,22 @@ public class ScheduleService {
         scheduleVoteRepository.saveAll(newVotes);
 
     }
+
+    //내가 투표한거 조회
     @Transactional(readOnly = true)
     public ScheduleVoteDTO getMyVotes(Long teamId, Long userId) {
         // 팀 구성원인지 확인
         UserTeamManager voter = utmRepository.findByUserIdAndTeam_TeamId(userId, teamId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 유저는 팀 멤버가 아닙니다."));
 
-        // 스케줄 조회
+        // 스케줄 조회하고
         Schedule schedule = scheduleRepository.findByTeam_TeamId(teamId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 팀에 스케줄이 존재하지 않습니다."));
 
-        // 유저가 투표한 ScheduleVote 전부 조회
+        // 유저가 투표한 ScheduleVote 전부 가져와서
         List<ScheduleVote> myVotes = scheduleVoteRepository.findByVoterId(voter.getId());
 
-        // 날짜별 그룹핑
+        // 날짜별 묶어가지고 반환
         Map<LocalDate, List<Integer>> grouped = myVotes.stream()
                 .collect(Collectors.groupingBy(
                         vote -> vote.getTimeSlot().getCandidateDate().getDate(),
@@ -155,5 +158,29 @@ public class ScheduleService {
         return new ScheduleVoteDTO(result);
     }
 
+    //팀단위 투표현황 요약 조회
+    @Transactional(readOnly = true)
+    public ScheduleVoteSummaryResponse getVoteSummary(Long teamId) {
+        Schedule schedule = scheduleRepository.findByTeam_TeamId(teamId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 팀에 스케줄이 존재하지 않습니다."));
+
+        // 후보 날짜들 일단 갖고와서
+        List<CandidateDate> candidateDates = candidateDateRepository.findBySchedule_ScheduleId(schedule.getScheduleId());
+        List<ScheduleVoteSummaryResponse.SummaryByDate> result = new ArrayList<>();
+
+        // 후보 날짜들에 따라 투표 내용들을 모아서 반환 => 인원수 갖고오기 slot의 votes 활용
+        for (CandidateDate candidateDate : candidateDates) {
+            List<ScheduleVoteSummaryResponse.HourVote> hourVotes = new ArrayList<>();
+
+            for (ScheduleTimeSlot slot : candidateDate.getTimeSlots()) {
+                int count = slot.getVotes().size(); // 이 시간대에 투표한 인원 수
+                hourVotes.add(new ScheduleVoteSummaryResponse.HourVote(slot.getHour(), count));
+            }
+
+            result.add(new ScheduleVoteSummaryResponse.SummaryByDate(candidateDate.getDate(), hourVotes));
+        }
+
+        return new ScheduleVoteSummaryResponse(result);
+    }
 
 }
