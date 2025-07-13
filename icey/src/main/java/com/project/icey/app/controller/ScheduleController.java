@@ -1,9 +1,6 @@
 package com.project.icey.app.controller;
 
-import com.project.icey.app.dto.CustomUserDetails;
-import com.project.icey.app.dto.ScheduleCreateRequest;
-import com.project.icey.app.dto.ScheduleVoteDTO;
-import com.project.icey.app.dto.ScheduleVoteSummaryResponse;
+import com.project.icey.app.dto.*;
 import com.project.icey.app.service.ScheduleService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -40,7 +37,7 @@ public class ScheduleController {
     @GetMapping("/{teamId}/schedule/votes-mine")
     public ResponseEntity<?> getMyVotes(@PathVariable Long teamId,
                                                              @AuthenticationPrincipal CustomUserDetails userDetails) {
-        ScheduleVoteDTO response = scheduleService.getMyVotes(teamId, userDetails.getUser().getId());
+        FormattedScheduleVoteResponse response = scheduleService.getMyVotes(teamId, userDetails.getUser().getId());
         return ResponseEntity.ok(response);
     }
 
@@ -49,6 +46,13 @@ public class ScheduleController {
     public ResponseEntity<?> getVoteSummary(@PathVariable Long teamId, @AuthenticationPrincipal CustomUserDetails userDetails) {
         ScheduleVoteSummaryResponse response = scheduleService.getVoteSummary(teamId);
         return ResponseEntity.ok(response);
+    }
+
+    //본인 투표 + 투표 현황 종합 조회 ver
+    @GetMapping("/{teamId}/schedule/votes-summary")
+    public ResponseEntity<?> getCombinedVoteSummary(@PathVariable Long teamId,
+                                                    @AuthenticationPrincipal CustomUserDetails userDetails) {
+        return ResponseEntity.ok(scheduleService.getCombinedVoteResult(teamId, userDetails.getUser().getId()));
     }
 
 }

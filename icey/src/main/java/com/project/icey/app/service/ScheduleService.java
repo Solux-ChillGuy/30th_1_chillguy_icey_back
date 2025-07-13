@@ -1,9 +1,7 @@
 package com.project.icey.app.service;
 
 import com.project.icey.app.domain.*;
-import com.project.icey.app.dto.ScheduleCreateRequest;
-import com.project.icey.app.dto.ScheduleVoteDTO;
-import com.project.icey.app.dto.ScheduleVoteSummaryResponse;
+import com.project.icey.app.dto.*;
 import com.project.icey.app.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -131,7 +129,7 @@ public class ScheduleService {
 
     //내가 투표한거 조회
     @Transactional(readOnly = true)
-    public ScheduleVoteDTO getMyVotes(Long teamId, Long userId) {
+    public FormattedScheduleVoteResponse getMyVotes(Long teamId, Long userId) {
         // 팀 구성원인지 확인
         UserTeamManager voter = utmRepository.findByUserIdAndTeam_TeamId(userId, teamId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 유저는 팀 멤버가 아닙니다."));
@@ -150,15 +148,15 @@ public class ScheduleService {
                         Collectors.mapping(vote -> vote.getTimeSlot().getHour(), Collectors.toList())
                 ));
 
-        List<ScheduleVoteDTO.VoteByDate> result = grouped.entrySet().stream()
+        List<FormattedScheduleVoteResponse.VoteByDate> result = grouped.entrySet().stream()
                 .sorted(Map.Entry.comparingByKey())
-                .map(entry -> new ScheduleVoteDTO.VoteByDate(entry.getKey(), entry.getValue()))
+                .map(entry -> new FormattedScheduleVoteResponse.VoteByDate(entry.getKey(), entry.getValue()))
                 .toList();
 
-        return new ScheduleVoteDTO(result);
+        return new FormattedScheduleVoteResponse(result);
     }
 
-    //팀단위 투표현황 요약 조회
+    //팀의 투표현황 요약 조회
     @Transactional(readOnly = true)
     public ScheduleVoteSummaryResponse getVoteSummary(Long teamId) {
         Schedule schedule = scheduleRepository.findByTeam_TeamId(teamId)
@@ -183,6 +181,44 @@ public class ScheduleService {
         }
 
         return new ScheduleVoteSummaryResponse(maxCount, result);
+    }
+
+    public ScheduleVoteCombinedResponse getCombinedVoteResult(Long teamId, Long userId) {
+        // 1. 팀/스케줄/유저 확인
+        UserTeamManager voter = utmRepository.findByUserIdAndTeam_TeamId(userId, teamId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 유저는 팀 멤버가 아닙니다."));
+        Schedule schedule = scheduleRepository.findByTeam_TeamId(teamId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 팀에 스케줄이 없습니다."));
+
+        // 2. 내 투표 정보 가져오기
+        List<ScheduleVote> myVotes = scheduleVoteRepository.findByVoterId(voter.getId());
+        Map<LocalDate, List<Integer>> myVotesGrouped = myVotes.stream()
+                .collect(Collectors.groupingBy(
+                        v -> v.getTimeSlot().getCandidateDate().getDate(),
+                        Collectors.mapping(v -> v.getTimeSlot().getHour(), Collectors.toList())
+                ));
+        List<ScheduleVoteCombinedResponse.VoteByDateResponse> myVotesResult = myVotesGrouped.entrySet().stream()
+                .map(entry -> new ScheduleVoteCombinedResponse.VoteByDateResponse(entry.getKey(), entry.getValue()))
+                .toList();
+
+        // 3. 전체 요약 정보 만들기
+        List<CandidateDate> candidateDates = candidateDateRepository.findBySchedule_ScheduleId(schedule.getScheduleId());
+        List<ScheduleVoteCombinedResponse.SummaryByDateResponse> summary = new ArrayList<>();
+        int maxCount = 0;
+
+        for (CandidateDate date : candidateDates) {
+            List<ScheduleVoteCombinedResponse.HourVote> hourVotes = new ArrayList<>();
+
+            for (ScheduleTimeSlot slot : date.getTimeSlots()) {
+                int count = slot.getVotes().size();
+                maxCount = Math.max(maxCount, count);
+                hourVotes.add(new ScheduleVoteCombinedResponse.HourVote(slot.getHour(), count));
+            }
+
+            summary.add(new ScheduleVoteCombinedResponse.SummaryByDateResponse(date.getDate(), hourVotes));
+        }
+
+        return new ScheduleVoteCombinedResponse(myVotesResult, summary, maxCount);
     }
 
 }
