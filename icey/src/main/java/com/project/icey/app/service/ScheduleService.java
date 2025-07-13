@@ -168,6 +168,7 @@ public class ScheduleService {
         List<CandidateDate> candidateDates = candidateDateRepository.findBySchedule_ScheduleId(schedule.getScheduleId());
         List<ScheduleVoteSummaryResponse.SummaryByDate> result = new ArrayList<>();
 
+        int maxCount = 0;
         // 후보 날짜들에 따라 투표 내용들을 모아서 반환 => 인원수 갖고오기 slot의 votes 활용
         for (CandidateDate candidateDate : candidateDates) {
             List<ScheduleVoteSummaryResponse.HourVote> hourVotes = new ArrayList<>();
@@ -175,12 +176,13 @@ public class ScheduleService {
             for (ScheduleTimeSlot slot : candidateDate.getTimeSlots()) {
                 int count = slot.getVotes().size(); // 이 시간대에 투표한 인원 수
                 hourVotes.add(new ScheduleVoteSummaryResponse.HourVote(slot.getHour(), count));
+                maxCount = Math.max(maxCount, count);
             }
 
             result.add(new ScheduleVoteSummaryResponse.SummaryByDate(candidateDate.getDate(), hourVotes));
         }
 
-        return new ScheduleVoteSummaryResponse(result);
+        return new ScheduleVoteSummaryResponse(maxCount, result);
     }
 
 }
