@@ -2,16 +2,15 @@ package com.project.icey.app.service;
 
 import com.project.icey.app.domain.*;
 import com.project.icey.app.dto.ScheduleCreateRequest;
-import com.project.icey.app.repository.CandidateDateRepository;
-import com.project.icey.app.repository.ScheduleRepository;
-import com.project.icey.app.repository.TeamRepository;
-import com.project.icey.app.repository.UserTeamRepository;
+import com.project.icey.app.dto.ScheduleVoteRequest;
+import com.project.icey.app.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -23,7 +22,10 @@ public class ScheduleService {
     private final ScheduleRepository scheduleRepository;
     private final CandidateDateRepository candidateDateRepository;
     private final NotificationService notificationService;
+    private final ScheduleTimeSlotRepository scheduleTimeSlotRepository;
+    private final ScheduleVoteRepository scheduleVoteRepository;
 
+    //약속잡기 투표 생성
     public void createSchedule(Long teamId, Long userId, ScheduleCreateRequest request) {
 
         //팀 조회
@@ -51,14 +53,24 @@ public class ScheduleService {
 
         scheduleRepository.save(schedule);
 
-        List<CandidateDate> candidateDates = request.getCandidateDates().stream()
-                .map(date -> CandidateDate.builder()
-                        .date(date)
-                        .schedule(schedule)
-                        .build())
-                .toList();
+        for (LocalDate date : request.getCandidateDates()) {
+            CandidateDate candidateDate = CandidateDate.builder()
+                    .date(date)
+                    .schedule(schedule)
+                    .build();
 
-        candidateDateRepository.saveAll(candidateDates);
+            candidateDateRepository.save(candidateDate);
+
+            // 9시 ~ 24시 시간 슬롯 생성
+            for (int hour = 9; hour <= 24; hour++) {
+                ScheduleTimeSlot timeSlot = ScheduleTimeSlot.builder()
+                        .hour(hour)
+                        .candidateDate(candidateDate)
+                        .build();
+
+                scheduleTimeSlotRepository.save(timeSlot);
+            }
+        }
 
         String message = team.getTeamName() + "로부터 약속잡기가 생성되었습니다.";
 
@@ -73,6 +85,46 @@ public class ScheduleService {
                 );
             }
         }
+
+    }
+
+    //약속 잡기 투표
+    @Transactional
+    public void submitVote(Long teamId, Long userId, ScheduleVoteRequest request){
+        // 팀 구성원인지 확인
+        UserTeamManager voter = utmRepository.findByUserIdAndTeam_TeamId(userId, teamId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 유저는 팀 멤버가 아닙니다."));
+
+        // 스케줄 투표가 존재하는지 확인
+        Schedule schedule = scheduleRepository.findByTeam_TeamId(teamId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 팀에 스케줄이 존재하지 않습니다."));
+
+        //기존에 있던 투표가 있었다면 싹 밀고 그냥 다시 쌓기
+        scheduleVoteRepository.deleteByVoterId(voter.getId());
+
+        List<ScheduleVote> newVotes = new ArrayList<>();
+
+        //먼저 날짜별로 이제 해당 타임 슬로
+        for (ScheduleVoteRequest.VoteByDate voteByDate : request.getVotes()) {
+            CandidateDate candidateDate = candidateDateRepository
+                    .findBySchedule_ScheduleIdAndDate(schedule.getScheduleId(), voteByDate.getDate())
+                    .orElseThrow(() -> new IllegalArgumentException("해당 날짜 후보가 존재하지 않습니다."));
+
+            for (Integer hour : voteByDate.getHours()) {
+                ScheduleTimeSlot slot = scheduleTimeSlotRepository
+                        .findByCandidateDateIdAndHour(candidateDate.getId(), hour)
+                        .orElseThrow(() -> new IllegalArgumentException("해당 시간대가 존재하지 않습니다."));
+
+                ScheduleVote vote = ScheduleVote.builder()
+                        .voter(voter)
+                        .timeSlot(slot)
+                        .build();
+
+                newVotes.add(vote);
+            }
+        }
+        scheduleVoteRepository.saveAll(newVotes);
+
     }
 
 }

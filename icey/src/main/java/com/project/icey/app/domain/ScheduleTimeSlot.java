@@ -17,9 +17,12 @@ public class ScheduleTimeSlot {
 
     private int hour; // 9~24시까지의 timeslot
 
-    private int voteCount;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "CANDIDATE_DATE_ID", nullable = false)
     private CandidateDate candidateDate;
+
+    @OneToMany(mappedBy = "timeSlot", cascade = CascadeType.ALL, orphanRemoval = true)
+    private java.util.List<ScheduleVote> votes = new java.util.ArrayList<>();
+
+
 }
