@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8" />
+    <title>로그인</title>
+</head>
+<body>
+<div class="login-box">
+    <h2>로그인</h2>
+    <input type="email" id="email" placeholder="이메일 입력" required />
+    <button type="button" onclick="login()">로그인</button>
+    <div class="error" id="errorMessage"></div>
+</div>
+
+<script>
+    function getQueryParam(name) {
+        const params = new URLSearchParams(window.location.search);
+        return params.get(name);
+    }
+
+    function login() {
+        const email = document.getElementById("email").value.trim();
+        const errorDiv = document.getElementById("errorMessage");
+        errorDiv.textContent = "";
+
+        if (!email) {
+            errorDiv.textContent = "이메일을 입력하세요.";
+            return;
+        }
+
+        fetch("/api/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email: email })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (!data.success) {
+                throw new Error(data.message || "로그인 실패");
+            }
+
+            // accessToken 저장
+            localStorage.setItem("accessToken", data.data.accessToken);
+
+            // 기본 리다이렉트 경로
+            const redirectUrl = getQueryParam("redirect") || "/sse-test.html";
+            window.location.href = redirectUrl;
+        })
+        .catch(err => {
+            document.getElementById("errorMessage").textContent = err.message;
+        });
+    }
+</script>
+</body>
+</html>
