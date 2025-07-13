@@ -8,6 +8,7 @@ import com.project.icey.app.repository.TeamRepository;
 import com.project.icey.app.repository.UserTeamRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -15,16 +16,18 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class ScheduleService {
     private final TeamRepository teamRepository;
     private final UserTeamRepository utmRepository;
     private final ScheduleRepository scheduleRepository;
     private final CandidateDateRepository candidateDateRepository;
+    private final NotificationService notificationService;
 
-    public void createSchedule(Long teamId, Long userId, ScheduleCreateRequest request){
+    public void createSchedule(Long teamId, Long userId, ScheduleCreateRequest request) {
 
         //팀 조회
-        Team team = teamRepository.findById(teamId)
+        Team team = teamRepository.findByIdWithMembersAndUsers(teamId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 팀이 존재하지 않습니다."));
 
         //팀장인지 조회해서 권한 확인하고
@@ -56,6 +59,20 @@ public class ScheduleService {
                 .toList();
 
         candidateDateRepository.saveAll(candidateDates);
+
+        String message = team.getTeamName() + "로부터 약속잡기가 생성되었습니다.";
+
+        List<UserTeamManager> members = team.getMembers();
+        for (UserTeamManager member : members) {
+            Long memberUserId = member.getUser().getId();
+            if (!memberUserId.equals(userId)) {
+                notificationService.sendNotification(
+                        member.getUser().getId(),
+                        NotificationType.APPOINTMENT_CREATED,
+                        message
+                );
+            }
+        }
     }
 
 }
