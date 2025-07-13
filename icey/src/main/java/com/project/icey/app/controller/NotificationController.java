@@ -42,18 +42,7 @@ public class NotificationController {
 
         return sseEmitterService.subscribe(userId);
     }
-    /*
-        @PostMapping("/broadcast")
-        public void broadcast(@RequestParam String token, @RequestBody Notification notification) {
-            if (!tokenService.validateToken(token)) {
-                throw new InvalidTokenException("유효하지 않은 토큰입니다.");
-            }
-            Long userId = tokenService.extractUserId(token)
-                    .orElseThrow(() -> new InvalidTokenException("토큰에서 사용자 ID를 찾을 수 없습니다."));
 
-            sseEmitterService.broadcast(userId, notification);
-        }
-    */
     @PostMapping("/broadcast")
     public void broadcast(@AuthenticationPrincipal CustomUserDetails userDetails,
                           @RequestBody Notification notification) {
