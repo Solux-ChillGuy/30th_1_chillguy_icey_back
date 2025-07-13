@@ -36,13 +36,14 @@ public class BalanceGameService {
 
         long gameCount = balanceGameRepository.countByTeam_TeamId(teamId);
         if (gameCount >= 2) {
-            throw new CoreApiException(ErrorCode.GAME_LIMIT_EXCEEDED); // 새로 정의한 에러 코드
+            throw new CoreApiException(ErrorCode.GAME_LIMIT_EXCEEDED);
         }
         String prompt = """
         밸런스 게임 주제를 만들어줘. 형식은 다음과 같아.
         선택지는 긴 문장 형태가 아니라 단어 혹은 두 단어 정도로 되도록.
         아래와 같은 형식의 밸런스 게임 json을 1개 생성해줘.
-        심오한 질문 말고 
+        두 선택지가 상반되면서 고민이 되도록 뜬금없는 두 선택지가 아니라 서로 뭐할지 고민이 되는 질문으로 생성해줘.
+        심오한 질문 말고 뻔한 질문 말고 창의적인 것으로 아이스브래이킹 가능한 질문으로 생성해줘.
         {
             "option1": "선택지 1 내용",
             "option2": "선택지 2 내용"
