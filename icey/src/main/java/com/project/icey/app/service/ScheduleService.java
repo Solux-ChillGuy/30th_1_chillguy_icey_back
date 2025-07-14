@@ -127,6 +127,28 @@ public class ScheduleService {
         }
         scheduleVoteRepository.saveAll(newVotes);
 
+        // 투표 인원수 확인해서 팀장에게 알림
+        Long votedCount = scheduleVoteRepository.countDistinctVotersByScheduleId(schedule.getScheduleId());
+        int totalMembers = schedule.getTeam().getMembers().size();
+
+        if(votedCount != null && votedCount == totalMembers) {
+            UserTeamManager leader = schedule.getTeam().getMembers().stream()
+                    .filter(member -> member.getRole() == UserRole.LEADER)
+                    .findFirst()
+                    .orElse(null);
+
+            String message = schedule.getTeam().getTeamName() + "의 팀원 모두가 가능한 시간대를 등록했습니다. 약속을 확정해보세요!";
+
+            if (leader != null) {
+                notificationService.sendNotification(
+                        leader.getUser().getId(),
+                        NotificationType.APPOINTMENT_COMPLETED,
+                        message
+                );
+            }
+        }
+
+
         return getCombinedVoteResult(teamId, userId);
     }
 
