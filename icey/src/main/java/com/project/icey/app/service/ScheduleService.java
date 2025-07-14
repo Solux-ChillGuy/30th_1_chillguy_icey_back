@@ -6,7 +6,7 @@ import com.project.icey.app.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
+import org.springframework.security.access.AccessDeniedException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -72,8 +72,7 @@ public class ScheduleService {
                 scheduleTimeSlotRepository.save(timeSlot);
             }
         }
-
-        String message = team.getTeamName() + "로부터 약속잡기가 생성되었습니다.";
+        String message = String.format("[%s]로부터 약속잡기가 생성되었습니다.", schedule.getTeam().getTeamName());
 
         List<UserTeamManager> members = team.getMembers();
         for (UserTeamManager member : members) {
@@ -137,7 +136,8 @@ public class ScheduleService {
                     .findFirst()
                     .orElse(null);
 
-            String message = schedule.getTeam().getTeamName() + "의 팀원 모두가 가능한 시간대를 등록했습니다. 약속을 확정해보세요!";
+            String message = String.format("[%s]의 팀원 모두가 가능한 시간대를 등록했습니다. 약속을 확정해보세요!", schedule.getTeam().getTeamName());
+
 
             if (leader != null) {
                 notificationService.sendNotification(
@@ -249,4 +249,83 @@ public class ScheduleService {
         return new ScheduleVoteCombinedResponse(myVotesResult, summary, maxCount);
     }
 
+    //과반수 이상 가능한 시간대 조회
+    public MajorityTimeResponse getMajorityAvailableTimeForAllDates(Long teamId) {
+
+        Team team = teamRepository.findByIdWithMembersAndUsers(teamId)
+                .orElseThrow(() -> new IllegalArgumentException("팀이 존재하지 않습니다."));
+        int totalMembers = team.getMembers().size();
+        int majority = (totalMembers / 2) + 1;
+
+        Schedule schedule = scheduleRepository.findByTeam_TeamId(teamId)
+                .orElseThrow(() -> new IllegalArgumentException("스케줄이 존재하지 않습니다."));
+
+        List<CandidateDate> candidateDates = candidateDateRepository
+                .findBySchedule_ScheduleId(schedule.getScheduleId());
+
+        List<MajorityTimeResponse.AvailableTimeByDate> results = candidateDates.stream()
+                .map(candidateDate -> {
+                    List<String> availableHours = candidateDate.getTimeSlots().stream()
+                            .filter(slot -> slot.getVotes().size() >= majority)
+                            .map(slot -> convertToTimeFormat(slot.getHour()))
+                            .collect(Collectors.toList());
+
+                    return new MajorityTimeResponse.AvailableTimeByDate(candidateDate.getDate(), availableHours);
+                })
+                .collect(Collectors.toList());
+
+        return new MajorityTimeResponse(results);
+    }
+
+    private String convertToTimeFormat(int hour) {
+        if (hour < 12) {
+            return String.format("AM %d:00", hour);
+        } else if (hour == 12) {
+            return "PM 12:00";
+        } else {
+            return String.format("PM %d:00", hour - 12);
+        }
+    }
+
+    @Transactional
+    public void confirmSchedule(Long teamId, Long userId, ConfirmScheduleRequest request) {
+        //팀과 팀장 확인
+        Team team = teamRepository.findByIdWithMembersAndUsers(teamId)
+                .orElseThrow(() -> new IllegalArgumentException("팀이 존재하지 않습니다."));
+
+        boolean isLeader = team.getMembers().stream()
+                .anyMatch(member -> member.getUser().getId().equals(userId) && member.getRole() == UserRole.LEADER);
+
+        if (!isLeader) {
+            throw new AccessDeniedException("팀장만 확정할 수 있습니다.");
+        }
+
+        //스케줄 조회 및 확정 처리
+        Schedule schedule = scheduleRepository.findByTeam_TeamId(teamId)
+                .orElseThrow(() -> new IllegalArgumentException("스케줄이 존재하지 않습니다."));
+
+        schedule.setConfirmedDate(request.getDate());
+        schedule.setConfirmedHour(request.getHour());
+        schedule.setConfirmed(true);
+        scheduleRepository.save(schedule);
+
+        //팀원에게 알림 보내기
+        String message = String.format("[%s]로부터 약속잡기가 확정되었습니다. 약속시간을 확인해보세요.", team.getTeamName());
+
+        List<UserTeamManager> members = team.getMembers();
+        for (UserTeamManager member : members) {
+            Long memberUserId = member.getUser().getId();
+            if (!memberUserId.equals(userId)) {
+                notificationService.sendNotification(
+                        member.getUser().getId(),
+                        NotificationType.APPOINTMENT_COMPLETED,
+                        message
+                );
+            }
+        }
+    }
+
+
 }
+
+

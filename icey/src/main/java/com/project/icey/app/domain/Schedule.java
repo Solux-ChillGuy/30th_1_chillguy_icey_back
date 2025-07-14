@@ -1,13 +1,11 @@
 package com.project.icey.app.domain;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.AttributeBinderType;
 import org.hibernate.annotations.CreationTimestamp;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -15,6 +13,7 @@ import java.util.List;
 @Entity
 @Builder
 @Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class Schedule {
@@ -37,5 +36,14 @@ public class Schedule {
     //여러 후보들 받을거니까
     @OneToMany(mappedBy = "schedule", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<CandidateDate> candidateDates = new ArrayList<>();
+
+    // 확정된 날짜
+    private LocalDate confirmedDate;
+
+    // 확정된 시간 (예: 시간대만 정수로 저장)
+    private Integer confirmedHour;
+
+    // 확정 여부
+    private boolean confirmed;
 
 }

@@ -55,4 +55,17 @@ public class ScheduleController {
         return ResponseEntity.ok(scheduleService.getCombinedVoteResult(teamId, userDetails.getUser().getId()));
     }
 
+    @GetMapping("/{teamId}/schedule/best-candidate")
+    public ResponseEntity<?> getBestCandidateTimes(@PathVariable Long teamId, @AuthenticationPrincipal CustomUserDetails userDetails) {
+        MajorityTimeResponse response = scheduleService.getMajorityAvailableTimeForAllDates(teamId);
+        return ResponseEntity.ok(response);
+    }
+    @PostMapping("/{teamId}/schedule/confirm")
+    public ResponseEntity<?> confirmSchedule(@PathVariable Long teamId,
+                                             @AuthenticationPrincipal CustomUserDetails userDetails,
+                                             @RequestBody ConfirmScheduleRequest request) {
+        scheduleService.confirmSchedule(teamId, userDetails.getUser().getId(), request);
+        return ResponseEntity.ok().build();
+    }
+
 }
