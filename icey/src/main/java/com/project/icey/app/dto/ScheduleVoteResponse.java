@@ -11,7 +11,7 @@ import java.util.List;
 @AllArgsConstructor
 public class ScheduleVoteResponse {
 
-    private List<VoteByDate> votes;
+    private List<VoteByDate> myVotes;
 
     @Getter
     @AllArgsConstructor

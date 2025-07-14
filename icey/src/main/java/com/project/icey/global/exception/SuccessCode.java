@@ -22,6 +22,8 @@ public enum SuccessCode {
     LETTER_WRITE_INFO_SUCCESS(HttpStatus.OK, "쪽지 작성화면 정보를 불러왔습니다."),
     GET_LETTER_SUCCESS(HttpStatus.OK, "쪽지(들)을 불러오는데 성공했습니다"),
 
+
+
     // 201 Created, Delete
     CREATE_POST_SUCCESS(HttpStatus.CREATED, "게시글 생성이 완료되었습니다."),
     CREATE_TEAM_SUCCESS(HttpStatus.CREATED, "팀이 생성되었습니다."),
@@ -29,6 +31,15 @@ public enum SuccessCode {
     DELETE_ATTENDANCE_SUCCESS(HttpStatus.NO_CONTENT, "작업 현장 탈퇴가 완료되었습니다."),
     DELETE_REPORT_SUCCESS(HttpStatus.NO_CONTENT, "신고 내역이 정상적으로 삭제되었습니다. "),
     DELETE_POST_SUCCESS(HttpStatus.NO_CONTENT, "게시글이 성공적으로 삭제 되었습니다. "),
+
+    //Schedule
+    CREATED_SCHEDULE(HttpStatus.CREATED, "약속 잡기가 생성되었습니다."),
+    CREATED_VOTE(HttpStatus.OK, "투표가 완료되었습니다."),
+    GET_MY_VOTE(HttpStatus.OK, "내 투표를 불러오는데 성공했습니다."),
+    GET_VOTE_SUMMARY(HttpStatus.OK, "투표 현황을 불러오는데 성공했습니다."),
+    GET_COMBINED_VOTE_SUMMARY(HttpStatus.OK, "투표현황과 내 투표를 동시에 불러오는데 성공했습니다."),
+    GET_BEST_CANDIDATE(HttpStatus.OK, "과반수 이상이 가능한 시간들을 불러오는데 성공했습니다."),
+    CONFIRMED_SCHEDULE(HttpStatus.OK, "약속이 확정되었습니다."),
 
     // Notice
     NOTICE_CREATED(HttpStatus.CREATED, "공지사항이 성공적으로 생성되었습니다."),

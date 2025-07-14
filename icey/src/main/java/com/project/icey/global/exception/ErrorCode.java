@@ -77,6 +77,18 @@ public enum ErrorCode {
     // Recipe
     RECIPE_NOT_FOUND(HttpStatus.NOT_FOUND, "레시피를 찾을 수 없습니다."),
 
+    //Team
+    TEAM_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 팀이 존재하지 않습니다."),
+    USER_NOT_IN_TEAM(HttpStatus.FORBIDDEN, "해당 유저는 이 팀의 구성원이 아닙니다."),
+
+    //Schedule
+    NOT_LEADER(HttpStatus.FORBIDDEN, "팀장만이 이 기능을 이용할 수 있습니다."),
+    SCHEDULE_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 이 팀은 진행하고 있는 약속 잡기가 있습니다."),
+    SCHEDULE_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 팀에 스케줄이 존재하지 않습니다."),
+    CANDIDATE_DATE_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 날짜 후보가 존재하지 않습니다."),
+    TIME_SLOT_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 시간대가 존재하지 않습니다."),
+
+
     // Server
     IMAGE_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "이미지 분석 서버 오류가 발생했습니다."),
     NO_COUNTS_DATA(HttpStatus.BAD_REQUEST, "counts 데이터를 찾을 수 없습니다."),
