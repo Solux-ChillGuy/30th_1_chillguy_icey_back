@@ -90,30 +90,9 @@ public class ScheduleService {
         return getCombinedVoteResult(teamId, userId);
     }
 
-    // 빈 투표 현황 생성 메서드 (스케줄 아이디 받아서 빈 투표 반환)
-    /*@Transactional(readOnly = true)
-    public ScheduleVoteSummaryResponse createEmptyVoteSummary(Long scheduleId) {
-        List<CandidateDate> candidateDates = candidateDateRepository.findBySchedule_ScheduleId(scheduleId);
-
-        List<ScheduleVoteSummaryResponse.SummaryByDate> summaryList = new ArrayList<>();
-
-        for (CandidateDate candidateDate : candidateDates) {
-            List<ScheduleVoteSummaryResponse.HourVote> hourVotes = new ArrayList<>();
-            for (ScheduleTimeSlot slot : candidateDate.getTimeSlots()) {
-                // 아무도 투표 안 했으니 count는 0
-                hourVotes.add(new ScheduleVoteSummaryResponse.HourVote(slot.getHour(), 0));
-            }
-            summaryList.add(new ScheduleVoteSummaryResponse.SummaryByDate(candidateDate.getDate(), hourVotes));
-        }
-
-        int maxCount = 0; // 빈 투표는 0
-
-        return new ScheduleVoteSummaryResponse(maxCount, summaryList);
-    }*/
-
     //약속 잡기 투표
     @Transactional
-    public void submitVote(Long teamId, Long userId, ScheduleVoteRequest request){
+    public ScheduleVoteCombinedResponse submitVote(Long teamId, Long userId, ScheduleVoteRequest request){
         // 팀 구성원인지 확인
         UserTeamManager voter = utmRepository.findByUserIdAndTeam_TeamId(userId, teamId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 유저는 팀 멤버가 아닙니다."));
@@ -148,6 +127,7 @@ public class ScheduleService {
         }
         scheduleVoteRepository.saveAll(newVotes);
 
+        return getCombinedVoteResult(teamId, userId);
     }
 
     //내가 투표한거 조회
@@ -205,6 +185,8 @@ public class ScheduleService {
 
         return new ScheduleVoteSummaryResponse(maxCount, result);
     }
+    
+    //팀 현황 + 내 투표 정보 통합조회
 
     @Transactional(readOnly = true)
     public ScheduleVoteCombinedResponse getCombinedVoteResult(Long teamId, Long userId) {

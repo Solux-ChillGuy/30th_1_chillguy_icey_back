@@ -29,8 +29,8 @@ public class ScheduleController {
     public ResponseEntity<?> submitVote(@PathVariable Long teamId,
                                         @AuthenticationPrincipal CustomUserDetails userDetails,
                                         @RequestBody ScheduleVoteRequest request) {
-        scheduleService.submitVote(teamId, userDetails.getUser().getId(), request);
-        return ResponseEntity.ok("투표가 저장되었습니다.");
+        ScheduleVoteCombinedResponse response = scheduleService.submitVote(teamId, userDetails.getUser().getId(), request);
+        return ResponseEntity.ok(response);
     }
 
     //약속 잡기 본인이 투표한 것 조회
