@@ -9,7 +9,7 @@ import java.util.List;
 
 @Getter
 @AllArgsConstructor
-public class FormattedScheduleVoteResponse {
+public class ScheduleVoteResponse {
 
     private List<VoteByDate> votes;
 

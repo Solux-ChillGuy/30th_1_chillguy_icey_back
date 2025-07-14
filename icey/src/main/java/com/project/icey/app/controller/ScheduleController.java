@@ -20,15 +20,15 @@ public class ScheduleController {
                                             @RequestBody ScheduleCreateRequest request,
                                             @AuthenticationPrincipal CustomUserDetails userDetails){
 
-        scheduleService.createSchedule(teamId, userDetails.getUser().getId(), request);
-        return ResponseEntity.ok("스케줄 투표가 생성되었습니다.");
+        ScheduleVoteCombinedResponse response = scheduleService.createSchedule(teamId, userDetails.getUser().getId(), request);
+        return ResponseEntity.ok(response);
     }
 
     //약속 잡기 투표
     @PostMapping("/{teamId}/schedule/votes")
     public ResponseEntity<?> submitVote(@PathVariable Long teamId,
                                         @AuthenticationPrincipal CustomUserDetails userDetails,
-                                        @RequestBody ScheduleVoteDTO request) {
+                                        @RequestBody ScheduleVoteRequest request) {
         scheduleService.submitVote(teamId, userDetails.getUser().getId(), request);
         return ResponseEntity.ok("투표가 저장되었습니다.");
     }
@@ -37,7 +37,7 @@ public class ScheduleController {
     @GetMapping("/{teamId}/schedule/votes-mine")
     public ResponseEntity<?> getMyVotes(@PathVariable Long teamId,
                                                              @AuthenticationPrincipal CustomUserDetails userDetails) {
-        FormattedScheduleVoteResponse response = scheduleService.getMyVotes(teamId, userDetails.getUser().getId());
+        ScheduleVoteResponse response = scheduleService.getMyVotes(teamId, userDetails.getUser().getId());
         return ResponseEntity.ok(response);
     }
 
