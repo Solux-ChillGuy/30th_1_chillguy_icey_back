@@ -98,7 +98,7 @@ public class MemoService {
         MemoReaction reaction;
         if (opt.isPresent()) {            // ── 이미 눌렀던 경우
             reaction = opt.get();
-            reaction.toggle();            //     true ↔ false
+            reaction.toggle();            //     true <> false
         } else {                          // ── 처음 누르는 경우
             reaction = reactRepo.save(
                     MemoReaction.create(memo, user));     // liked = true
