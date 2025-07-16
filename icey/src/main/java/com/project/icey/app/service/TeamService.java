@@ -180,10 +180,17 @@ public class TeamService {
                 .findFirst()
                 .orElseThrow(() ->  new IllegalArgumentException("팀에 리더가 존재하지 않습니다."));
         User leader = leaderUtm.getUser();
-        Card leaderCard = cardRepository.findByUserAndTeam(leader, team)
+        
+        //만약 팀장이 아직 명함을 안만들었다면.. ver1 아예 에러 뜨게 처리 안좋은것 같음
+        /*Card leaderCard = cardRepository.findByUserAndTeam(leader, team)
                 .orElseThrow(() -> new IllegalArgumentException("리더의 명함이 존재하지 않습니다."));
 
-        String leaderNickname = leaderCard.getNickname();
+        String leaderNickname = leaderCard.getNickname();*/
+        
+        //미등록은 닉네임 미등록 사용자로 처리하는거 어떤지 물어보기
+        String leaderNickname = cardRepository.findByUserAndTeam(leader, team)
+                .map(Card::getNickname)
+                .orElse("닉네임 미등록 사용자");
 
 
         return new InvitationTeamInfoResponse(
