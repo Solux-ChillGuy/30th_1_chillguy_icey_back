@@ -51,7 +51,6 @@ public class TeamService {
         return new TeamResponse(
                 team.getTeamId(),
                 team.getTeamName(),
-                invitationLink,
                 dDay
         );
     }
@@ -71,7 +70,6 @@ public class TeamService {
                     return new TeamResponse(
                             team.getTeamId(),
                             team.getTeamName(),
-                            team.getInvitation(),
                             dDay
 
                     );
