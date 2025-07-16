@@ -35,6 +35,7 @@ public class Letter {
     private LocalDateTime sentAt;
 
     @Column(nullable = false)
+    @Builder.Default
     private boolean isRead = false;
 
     @CreationTimestamp

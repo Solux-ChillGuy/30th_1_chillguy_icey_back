@@ -35,6 +35,7 @@ public class Schedule {
 
     //여러 후보들 받을거니까
     @OneToMany(mappedBy = "schedule", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
     private List<CandidateDate> candidateDates = new ArrayList<>();
 
     // 확정된 날짜
