@@ -6,6 +6,7 @@ import com.project.icey.app.repository.*;
 import com.project.icey.global.exception.ErrorCode;
 import com.project.icey.global.exception.model.CoreApiException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,6 +29,9 @@ public class TeamService {
     private final CardRepository cardRepository;
     private final ScheduleRepository scheduleRepository;
 
+    @Value("${app.base-url}")
+    private String baseUrl;
+
     public TeamResponse createTeam(CreateTeamRequest request, User creator){
         Team team = Team.builder() //
                 .teamName(request.getTeamName())
@@ -45,8 +49,6 @@ public class TeamService {
         userteamRepository.save(utm);
 
         //int memberCnt = userteamRepository.countByTeam(team);
-
-        String invitationLink = "http://localhost:8080/icey/invitation/"+team.getInvitation();
         long days = Duration.between(LocalDateTime.now(), team.getExpiration()).toDays();
         String dDay = "D-" + days;
 
@@ -84,7 +86,7 @@ public class TeamService {
         Team team = teamRepository.findById(teamId)
                 .orElseThrow(() -> new CoreApiException(ErrorCode.TEAM_NOT_FOUND));
 
-        String invitationLink = "http://localhost:8080/icey/invitation/"+team.getInvitation();
+        String invitationLink = baseUrl + "/invitation/"+team.getInvitation();
 
         return new InvitationResponse(
                 team.getTeamId(),
