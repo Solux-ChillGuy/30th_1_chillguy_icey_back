@@ -2,10 +2,7 @@ package com.project.icey.app.service;
 
 import com.project.icey.app.domain.*;
 import com.project.icey.app.dto.*;
-import com.project.icey.app.repository.CardRepository;
-import com.project.icey.app.repository.TeamRepository;
-import com.project.icey.app.repository.UserRepository;
-import com.project.icey.app.repository.UserTeamRepository;
+import com.project.icey.app.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -27,6 +24,7 @@ public class TeamService {
     private final TeamRepository teamRepository;
     private final UserTeamRepository userteamRepository;
     private final CardRepository cardRepository;
+    private final ScheduleRepository scheduleRepository;
 
     public TeamResponse createTeam(CreateTeamRequest request, User creator){
         Team team = Team.builder() //
@@ -44,7 +42,7 @@ public class TeamService {
 
         userteamRepository.save(utm);
 
-        int memberCnt = userteamRepository.countByTeam(team);
+        //int memberCnt = userteamRepository.countByTeam(team);
 
         String invitationLink = "http://localhost:8080/icey/invitation/"+team.getInvitation();
         long days = Duration.between(LocalDateTime.now(), team.getExpiration()).toDays();
@@ -65,7 +63,7 @@ public class TeamService {
                 .map(utm -> {
                     Team team = utm.getTeam();
 
-                    int memberCnt = userteamRepository.countByTeam(team);
+                    //int memberCnt = userteamRepository.countByTeam(team);
 
                     long daysLeft = ChronoUnit.DAYS.between(LocalDate.now(), team.getExpiration().toLocalDate());
                     String dDay = "D-" + daysLeft;
@@ -96,7 +94,7 @@ public class TeamService {
         );
     }
 
-    public UserTeamJoinResponse joinTeamByInvitation(User user, String invitationToken) {
+    public void joinTeamByInvitation(User user, String invitationToken) {
         Team team = teamRepository.findByInvitation(invitationToken)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "유효하지 않은 초대 링크입니다."));
         int memberCnt = userteamRepository.countByTeam(team);
@@ -117,14 +115,6 @@ public class TeamService {
                 .role(UserRole.MEMBER)
                 .build();
         userteamRepository.save(relation);
-
-        return new UserTeamJoinResponse(
-                team.getTeamId(),
-                team.getTeamName(),
-                user.getId(),
-                user.getUserName(),
-                LocalDateTime.now().toString() // 필요시 formatter 적용
-        );
     }
 
     @Transactional(readOnly = true)
@@ -153,13 +143,27 @@ public class TeamService {
 
         UserRole role = userTeamManager.getRole();
 
+        //정해진 약속잡기가 있는지 조회
+        boolean hasSchedule = scheduleRepository.existsByTeam_TeamId(teamId);
+        String confirmedDate = null;
+        if (hasSchedule) {
+            Schedule schedule = scheduleRepository.findByTeam_TeamId(teamId)
+                    .orElse(null);
+            if (schedule != null && schedule.isConfirmed() && schedule.getConfirmedDate() != null) {
+                confirmedDate = schedule.getConfirmedDate().toString();
+            }
+        }
+
+
         return new TeamDetailResponse(
                 team.getTeamId(),
                 team.getTeamName(),
                 memberCnt,
                 currentDate,
                 dDay,
-                role.name()
+                role.name(),
+                hasSchedule,
+                confirmedDate
         );
 
     }

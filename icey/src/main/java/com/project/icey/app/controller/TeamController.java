@@ -66,6 +66,7 @@ public class TeamController {
                                                       @PathVariable String invitationToken){
         User user = userDetails.getUser();
         teamService.joinTeamByInvitation(user, invitationToken);
+
         return ApiResponseTemplete.success(SuccessCode.JOIN_TEAM_SUCCESS, null);
     }
     //초대링크를 통한 초대장(팀 정보) 조회

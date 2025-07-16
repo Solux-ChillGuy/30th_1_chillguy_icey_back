@@ -14,4 +14,6 @@ public class TeamDetailResponse {
     private String currentDate;
     private String dDay;
     private String role;
+    private boolean hasSchedule;
+    private String confirmedDate;
 }
