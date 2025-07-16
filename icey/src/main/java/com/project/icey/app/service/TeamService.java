@@ -1,10 +1,8 @@
 package com.project.icey.app.service;
 
-import com.project.icey.app.domain.Team;
-import com.project.icey.app.domain.User;
-import com.project.icey.app.domain.UserRole;
-import com.project.icey.app.domain.UserTeamManager;
+import com.project.icey.app.domain.*;
 import com.project.icey.app.dto.*;
+import com.project.icey.app.repository.CardRepository;
 import com.project.icey.app.repository.TeamRepository;
 import com.project.icey.app.repository.UserRepository;
 import com.project.icey.app.repository.UserTeamRepository;
@@ -27,6 +25,7 @@ import java.util.stream.Collectors;
 public class TeamService {
     private final TeamRepository teamRepository;
     private final UserTeamRepository userteamRepository;
+    private final CardRepository cardRepository;
 
     public TeamResponse createTeam(CreateTeamRequest request, User creator){
         Team team = Team.builder() //
@@ -155,16 +154,27 @@ public class TeamService {
 
     }
 
+    @Transactional(readOnly = true)
     public InvitationTeamInfoResponse getTeamInfoByInvitation(String invitationToken){
         Team team = teamRepository.findByInvitation(invitationToken)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "유효하지 않은 초대 링크입니다."));
 
-        int memberCnt = userteamRepository.countByTeam(team);
+        //int memberCnt = userteamRepository.countByTeam(team);
+        //2025-07-15 memberCnt가 아닌 리더의 이름을 반환하도록 수정
+        UserTeamManager leaderUtm = team.getMembers().stream()
+                .filter(utm -> utm.getRole() == UserRole.LEADER)
+                .findFirst()
+                .orElseThrow(() ->  new IllegalArgumentException("팀에 리더가 존재하지 않습니다."));
+        User leader = leaderUtm.getUser();
+        Card leaderCard = cardRepository.findByUserAndTeam(leader, team)
+                .orElseThrow(() -> new IllegalArgumentException("리더의 명함이 존재하지 않습니다."));
+
+        String leaderNickname = leaderCard.getNickname();
+
 
         return new InvitationTeamInfoResponse(
-                team.getTeamId(),
                 team.getTeamName(),
-                memberCnt
+                leaderNickname
         );
     }
 
