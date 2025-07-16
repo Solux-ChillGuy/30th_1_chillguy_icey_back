@@ -22,6 +22,7 @@ public class ScheduleTimeSlot {
     private CandidateDate candidateDate;
 
     @OneToMany(mappedBy = "timeSlot", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
     private java.util.List<ScheduleVote> votes = new java.util.ArrayList<>();
 
 

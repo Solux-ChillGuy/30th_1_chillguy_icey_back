@@ -22,9 +22,6 @@ public class UserTeamManager {
     @ManyToOne
     private User user;
 
-    //nickname은 추후 card와 연결
-    private String nickname;
-
     @Enumerated(EnumType.STRING)  // enum을 문자열로 DB 저장
     private UserRole role;
 
