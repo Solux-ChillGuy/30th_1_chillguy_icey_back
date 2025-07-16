@@ -3,6 +3,8 @@ package com.project.icey.app.service;
 import com.project.icey.app.domain.*;
 import com.project.icey.app.dto.*;
 import com.project.icey.app.repository.*;
+import com.project.icey.global.exception.ErrorCode;
+import com.project.icey.global.exception.model.CoreApiException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -80,7 +82,7 @@ public class TeamService {
 
     public InvitationResponse getInvitation(User user, Long teamId){
         Team team = teamRepository.findById(teamId)
-                .orElseThrow(() -> new IllegalArgumentException("Team을 찾지 못했습니다"));
+                .orElseThrow(() -> new CoreApiException(ErrorCode.TEAM_NOT_FOUND));
 
         String invitationLink = "http://localhost:8080/icey/invitation/"+team.getInvitation();
 
