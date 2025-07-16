@@ -41,6 +41,15 @@ public enum SuccessCode {
     GET_BEST_CANDIDATE(HttpStatus.OK, "과반수 이상이 가능한 시간들을 불러오는데 성공했습니다."),
     CONFIRMED_SCHEDULE(HttpStatus.OK, "약속이 확정되었습니다."),
 
+    //Team -> create은 위에 있음.
+    GET_TEAM_LIST_SUCCESS(HttpStatus.OK, "팀 목록 조회가 완료되었습니다."),
+    GET_INVITATION_SUCCESS(HttpStatus.OK, "초대 링크 조회가 완료되었습니다."),
+    JOIN_TEAM_SUCCESS(HttpStatus.CREATED, "팀 가입이 완료되었습니다."),
+    GET_TEAM_DETAIL_SUCCESS(HttpStatus.OK, "팀 상세 정보 조회가 완료되었습니다."),
+    DELETE_TEAM_SUCCESS(HttpStatus.NO_CONTENT, "팀이 성공적으로 삭제되었습니다."),
+    LEAVE_TEAM_SUCCESS(HttpStatus.NO_CONTENT, "팀 탈퇴가 완료되었습니다."),
+    GET_TEAM_INFO_BY_INVITATION_SUCCESS(HttpStatus.OK, "초대 링크를 통해 팀 정보를 불러왔습니다."),
+
     // Notice
     NOTICE_CREATED(HttpStatus.CREATED, "공지사항이 성공적으로 생성되었습니다."),
     NOTICE_UPDATED(HttpStatus.OK, "공지사항이 성공적으로 수정되었습니다."),

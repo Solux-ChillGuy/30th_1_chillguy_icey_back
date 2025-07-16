@@ -15,6 +15,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.UUID;
@@ -144,12 +145,21 @@ public class TeamService {
         long daysLeft = ChronoUnit.DAYS.between(LocalDate.now(), team.getExpiration().toLocalDate());
         String dDay ="D-" + daysLeft;
 
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM.dd");
+        String currentDate = LocalDate.now().format(formatter);
+
+        UserTeamManager userTeamManager = userteamRepository.findByUserAndTeam(user, team)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN, "팀의 멤버가 아닙니다."));
+
+        UserRole role = userTeamManager.getRole();
+
         return new TeamDetailResponse(
                 team.getTeamId(),
                 team.getTeamName(),
                 memberCnt,
-                dDay
-
+                currentDate,
+                dDay,
+                role.name()
         );
 
     }

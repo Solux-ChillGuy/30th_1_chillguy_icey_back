@@ -11,5 +11,7 @@ public class TeamDetailResponse {
     private Long teamId;
     private String teamName;
     private Integer memberCount;
+    private String currentDate;
     private String dDay;
+    private String role;
 }
