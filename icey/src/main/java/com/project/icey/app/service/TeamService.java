@@ -29,7 +29,7 @@ public class TeamService {
     private final CardRepository cardRepository;
     private final ScheduleRepository scheduleRepository;
 
-    @Value("${app.base-url}")
+    @Value("${app.frontEndBaseUrl}")
     private String baseUrl;
 
     public TeamResponse createTeam(CreateTeamRequest request, User creator){
