@@ -1,14 +1,11 @@
-# 1. JDK 21 베이스 이미지 사용
+# --- Step 1: Gradle 빌드 단계 ---
+FROM gradle:8.4.0-jdk21 AS build
+COPY --chown=gradle:gradle . /home/gradle/project
+WORKDIR /home/gradle/project
+RUN gradle build -x test
+
+# --- Step 2: 실행 이미지 ---
 FROM openjdk:21
-
-# 2. 작업 디렉터리 설정 (컨테이너 내부 기준)
 WORKDIR /app
-
-# 3. JAR 파일을 컨테이너로 복사
-COPY build/libs/moyora-0.0.1-SNAPSHOT.jar app.jar
-
-# 4. 컨테이너 외부와 포트 매핑
-EXPOSE 8080
-
-# 5. 실행 명령어
+COPY --from=build /home/gradle/project/build/libs/icey-0.0.1-SNAPSHOT.jar app.jar
 ENTRYPOINT ["java", "-jar", "app.jar"]
