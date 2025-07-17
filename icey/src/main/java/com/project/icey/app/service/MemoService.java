@@ -24,6 +24,7 @@ public class MemoService {
     private final MemoReactionRepository  reactRepo;
     private final UserTeamRepository      utmRepo;   // ✅ 이미 있는 Repo 재사용
     private final TeamRepository          teamRepo;
+    private final CardRepository cardRepo;
 
     /* ─────────── 조회 ─────────── */
 
@@ -129,15 +130,29 @@ public class MemoService {
         boolean liked = reactRepo.findByMemo_IdAndUser_Id(m.getId(), viewerId)
                 .map(MemoReaction::isLiked).orElse(false);
         long likeCnt  = reactRepo.countByMemo_IdAndLikedTrue(m.getId());
+
+        //  카드 닉네임&색상 조회
+        User author = m.getUtm().getUser();
+        Team team   = m.getUtm().getTeam();
+        Card authorCard = cardRepo.findByUserAndTeam(author, team)
+                .orElseThrow(() -> new IllegalStateException("카드가 없습니다"));
+
+        String authorNickname = authorCard.getAdjective() + " " + authorCard.getProfileColor() + " " + authorCard.getAnimal();
+
+
+        // 좋아요 한 사람 목록(형용사 + 색 + 동물)
         List<String> likeUsers = reactRepo.findByMemo_IdAndLikedTrue(m.getId())
                 .stream()
-                .map(r -> r.getUser().getUserName()) // 필요하면 닉네임으로 수정
+                .map(r -> {
+                    Card c = cardRepo.findByUserAndTeam(r.getUser(), team).orElseThrow();
+                    return c.getAdjective() + " " + c.getProfileColor() + " " + c.getAnimal();
+                })
                 .toList();
 
         return new MemoResponse(
                 m.getId(),
-                m.getUtm().getUser().getId(),
-                m.getUtm().getNickname(),
+                author.getId(),
+                authorNickname,
                 m.getContent(),
                 liked,
                 likeCnt,
