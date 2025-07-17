@@ -38,7 +38,7 @@ public class LetterService {
                 .orElseThrow(() -> new IllegalArgumentException("받는 명함이 존재하지 않습니다."));
 
         Card sender = cardRepo.findByTeam_TeamIdAndUserId(teamId, currentUserId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 팀에서 보낼 명함이 없습니다."));
+                .orElseThrow(() -> new IllegalArgumentException("해당 유저는 이 팀에 소속되어있지 않습니다."));
 
         //이렇게 되면 현재 사실상 보내는 사람과 받는 사람이 같은 팀내에 있는가에 대한 유효성 검사가 빠진 상태임.
         if (!receiver.getTeam().getTeamId().equals(teamId)) {
@@ -46,7 +46,7 @@ public class LetterService {
         }
 
 
-        CardResponse receiverCardResponse = new CardResponse(
+        WriteInfoResponse.ReceiverCardInfo receiverCardInfo = new WriteInfoResponse.ReceiverCardInfo(
                 receiver.getId(),
                 receiver.getNickname(),
                 receiver.getAnimal(),
@@ -55,7 +55,8 @@ public class LetterService {
                 receiver.getMbti(),
                 receiver.getHobby(),
                 receiver.getSecretTip(),
-                receiver.getTmi()
+                receiver.getTmi(),
+                receiver.getTeam().getTeamName()
         );
 
         String receiverTeamName = receiver.getTeam() != null ? receiver.getTeam().getTeamName() : null;
@@ -63,8 +64,7 @@ public class LetterService {
 
         return new WriteInfoResponse(
                 new WriteInfoResponse.CardInfo(sender.getId(), sender.getNickname()),
-                receiverCardResponse,
-                receiverTeamName
+                receiverCardInfo
         );
     }
 
