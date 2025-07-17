@@ -41,7 +41,8 @@ public class SwaggerConfig {
                         .addSecuritySchemes("BearerAuth", bearerAuth))
                 .addSecurityItem(securityRequirement)
                 .servers(List.of(
-                        new Server().url("http://localhost:8080")
+                        new Server().url("http://localhost:8080"),
+                        new Server().url("https://icey-backend-1027532113913.asia-northeast3.run.app") // ✅ 배포 서버
                 ));
     }
 }
