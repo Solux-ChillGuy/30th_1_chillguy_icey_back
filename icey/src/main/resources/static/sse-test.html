@@ -25,6 +25,34 @@
 <div id="sse-url"></div>
 <div id="messages"></div>
 <script>
+    const HOST = window.HOST || 'http://localhost:8080';
+
+    const token = localStorage.getItem('accessToken');
+    if (!token) {
+        alert('토큰이 없습니다. 로그인 후 접속하세요.');
+        throw new Error('No token');
+    }
+
+    let payload;
+    try {
+        payload = JSON.parse(atob(token.split('.')[1]));
+    } catch (e) {
+        alert('토큰 파싱 오류');
+        throw e;
+    }
+
+    const userId = payload.userId || payload.id;
+    if (!userId) {
+        alert('토큰에 userId 정보가 없습니다.');
+        throw new Error('userId 없음');
+    }
+
+    const messages = document.getElementById('messages');
+    const sseUrlDiv = document.getElementById('sse-url');
+
+    const sseUrl = `${HOST}/api/notification/subscribe?token=${token}`;
+    sseUrlDiv.textContent = `SSE 연결 URL: ${sseUrl}`;
+
     const token = localStorage.getItem('accessToken');
 
     if (!token) {
