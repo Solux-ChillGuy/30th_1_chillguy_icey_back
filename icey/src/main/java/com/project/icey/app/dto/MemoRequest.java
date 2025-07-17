@@ -16,3 +16,4 @@ public class MemoRequest {
     )
     private String content;
 }
+
