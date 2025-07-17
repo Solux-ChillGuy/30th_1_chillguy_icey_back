@@ -56,7 +56,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(CoreApiException.class)
     public ResponseEntity<ApiResponseTemplete<String>> handleCoreApiException(CoreApiException e) {
-        return ApiResponseTemplete.error(ErrorCode.LLM_SERVER_ERROR, e.getMessage());
+        return ApiResponseTemplete.error(e.getErrorCode(), e.getMessage()); //여기를 LLM_SERVER_ERROR에서 상태코드 가지고 오는걸로 수정했습니다.. 이래도 될까요..?
     }
 
     @ExceptionHandler(ResponseStatusException.class)

@@ -9,6 +9,5 @@ import lombok.Getter;
 public class TeamResponse {
     private Long id;
     private String teamName;
-    private String invitation;
     private String dDay;
 }

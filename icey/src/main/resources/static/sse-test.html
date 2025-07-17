@@ -49,11 +49,11 @@
     const messages = document.getElementById('messages');
     const sseUrlDiv = document.getElementById('sse-url');
 
-    const sseUrl = `http://localhost:8080/api/notification/subscribe?token=${token}`;
+    const sseUrl = `https://icey-backend-1027532113913.asia-northeast3.run.app/api/notification/subscribe?token=${token}`;
     sseUrlDiv.textContent = `SSE 연결 URL: ${sseUrl}`;
 
     function loadUnreadNotifications() {
-        fetch(`http://localhost:8080/api/notification/unread`, {
+        fetch(`https://icey-backend-1027532113913.asia-northeast3.run.app/api/notification/unread`, {
             headers: {
                 'Authorization': `Bearer ${token}`
             }

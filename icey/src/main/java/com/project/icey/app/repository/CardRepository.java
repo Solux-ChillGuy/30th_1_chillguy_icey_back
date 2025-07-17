@@ -1,6 +1,8 @@
 package com.project.icey.app.repository;
 
 import com.project.icey.app.domain.Card;
+import com.project.icey.app.domain.Team;
+import com.project.icey.app.domain.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
@@ -21,6 +23,8 @@ public interface CardRepository extends JpaRepository<Card, Long> {
     List<Card> findByOriginId(Long originId);
     //이 템플릿을 쓰는 팀카드가 하나라도 있는지?
     boolean existsByOriginId(Long originId);
+
+    Optional<Card> findByUserAndTeam(User user, Team team);
 }
 
 //findByTeamId
