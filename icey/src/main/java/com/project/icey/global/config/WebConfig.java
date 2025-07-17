@@ -9,9 +9,14 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {
-        registry.addMapping("/notification/**")
-                .allowedOrigins("http://localhost:8080") // 또는 "*"
-                .allowedMethods("*")
+        String allowedOrigin = System.getenv("HOST");
+        if (allowedOrigin == null || allowedOrigin.isEmpty()) {
+            allowedOrigin = "http://localhost:8080"; // 기본값
+        }
+
+        registry.addMapping("/**")
+                .allowedOrigins(allowedOrigin)
+                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                 .allowCredentials(true);
     }
 }
