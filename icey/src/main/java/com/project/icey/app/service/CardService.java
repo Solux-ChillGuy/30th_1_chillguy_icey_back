@@ -7,6 +7,8 @@ import com.project.icey.app.dto.CardRequest;
 import com.project.icey.app.dto.CardResponse;
 import com.project.icey.app.repository.CardRepository;
 import com.project.icey.app.repository.TeamRepository;
+import com.project.icey.global.exception.ErrorCode;
+import com.project.icey.global.exception.model.CoreApiException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -56,9 +58,9 @@ public class CardService {
     /* ---------- 템플릿 수정 (파생 카드 동기화) ---------- */
     public CardResponse update(Long tplId, Long userId, CardRequest req) {
         Card tpl = cardRepo.findById(tplId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 템플릿입니다"));
+                .orElseThrow(() -> new CoreApiException(ErrorCode.CARD_TEMPLATE_NOT_FOUND)); // 존재하지 않는 템플릿
         if (!tpl.getUser().getId().equals(userId))
-            throw new IllegalArgumentException("내 템플릿이 아닙니다");
+            throw new CoreApiException(ErrorCode.NOT_MY_TEMPLATE); // 내 템플릿이 아님
 
         apply(tpl, req);
         tpl.regenerateNickname();
@@ -74,11 +76,11 @@ public class CardService {
     /* ---------- 템플릿 삭제 ---------- */
     public void delete(Long tplId, Long userId) {
         Card tpl = cardRepo.findById(tplId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 템플릿입니다"));
+                .orElseThrow(() -> new CoreApiException(ErrorCode.CARD_TEMPLATE_NOT_FOUND)); // 존재하지 않는 템플릿
         if (!tpl.getUser().getId().equals(userId))
-            throw new IllegalArgumentException("내 템플릿이 아닙니다");
+            throw new CoreApiException(ErrorCode.NOT_MY_TEMPLATE); // 내 템플릿이 아님
         if (cardRepo.existsByOriginId(tplId))
-            throw new IllegalStateException("다른 팀에서 사용 중인 템플릿은 삭제할 수 없습니다");
+            throw new CoreApiException(ErrorCode.TEMPLATE_IN_USE); // 다른 팀에서 사용 중
 
         cardRepo.delete(tpl);
     }
@@ -86,10 +88,10 @@ public class CardService {
     /* ---------- 팀 적용 ---------- */
     public CardResponse applyTemplate(Long teamId, Long tplId, User user) {
         Card tpl = cardRepo.findById(tplId)
-                .orElseThrow(() -> new IllegalArgumentException("템플릿이 없습니다"));
+                .orElseThrow(() -> new CoreApiException(ErrorCode.CARD_TEMPLATE_NOT_FOUND)); // 템플릿이 없음
 
         Team team = teamRepo.findById(teamId)
-                .orElseThrow(() -> new IllegalArgumentException("팀이 없습니다"));
+                .orElseThrow(() -> new CoreApiException(ErrorCode.TEAM_NOT_FOUND)); // 팀이 없음
 
         // 기존 팀 명함 있으면 삭제
         cardRepo.findByTeam_TeamIdAndUserId(teamId, user.getId())
@@ -110,7 +112,6 @@ public class CardService {
         return applyTemplate(teamId, tpl.getId(), user);
     }
     */
-
 
     /* ---------- 내부 유틸 ---------- */
     private Card toEntity(CardRequest r) {
@@ -142,7 +143,7 @@ public class CardService {
                 c.getNickname(),
                 c.getAnimal(),
                 c.getProfileColor(),            // 색 이름 ("빨강" 등) — 템플릿이면 null
-                c.getAccessory(),  // 악세서리 코드 (null 가능)
+                c.getAccessory(),               // 악세서리 코드 (null 가능)
                 c.getHobby(),
                 c.getMbti(),
                 c.getSecretTip(),

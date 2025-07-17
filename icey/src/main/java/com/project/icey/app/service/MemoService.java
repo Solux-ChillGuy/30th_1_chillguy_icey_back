@@ -4,6 +4,8 @@ import com.project.icey.app.domain.*;
 import com.project.icey.app.dto.MemoRequest;
 import com.project.icey.app.dto.MemoResponse;
 import com.project.icey.app.repository.*;
+import com.project.icey.global.exception.ErrorCode;
+import com.project.icey.global.exception.model.CoreApiException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -37,7 +39,7 @@ public class MemoService {
     @Transactional(readOnly = true)
     public MemoResponse detail(Long teamId, Long memoId, Long viewerId) {
         Memo memo = memoRepo.findById(memoId)
-                .orElseThrow(() -> new IllegalArgumentException("메모가 없습니다."));
+                .orElseThrow(() -> new CoreApiException(ErrorCode.MEMO_NOT_FOUND)); // 메모 없음
         validateTeam(memo, teamId);
         return toDto(memo, viewerId);
     }
@@ -48,14 +50,14 @@ public class MemoService {
     public MemoResponse create(Long teamId, MemoRequest req, User author) {
 
         if (memoRepo.countByTeamId(teamId) >= boardLimit)
-            throw new IllegalArgumentException("게시판이 가득 찼습니다.");
+            throw new CoreApiException(ErrorCode.MEMO_BOARD_LIMIT_EXCEEDED); // 게시판 가득 참
 
         /* Team 엔티티를 먼저 조회한 뒤 기존 메서드 findByUserAndTeam 사용 */
         Team team = teamRepo.findById(teamId)
-                .orElseThrow(() -> new IllegalArgumentException("팀이 없습니다."));
+                .orElseThrow(() -> new CoreApiException(ErrorCode.TEAM_NOT_FOUND)); // 팀 없음
 
         UserTeamManager utm = utmRepo.findByUserAndTeam(author, team)
-                .orElseThrow(() -> new IllegalArgumentException("팀 멤버가 아닙니다."));
+                .orElseThrow(() -> new CoreApiException(ErrorCode.FORBIDDEN_AUTH_EXCEPTION)); // 팀 멤버 아님
 
         Memo memo = memoRepo.save(
                 Memo.builder().utm(utm).content(req.getContent()).build()
@@ -68,7 +70,7 @@ public class MemoService {
     @Transactional
     public MemoResponse update(Long teamId, Long memoId, MemoRequest req, Long userId) {
         Memo memo = memoRepo.findById(memoId)
-                .orElseThrow(() -> new IllegalArgumentException("메모가 없습니다."));
+                .orElseThrow(() -> new CoreApiException(ErrorCode.MEMO_NOT_FOUND)); // 메모 없음
         validateOwner(memo, teamId, userId);
         memo.updateContent(req.getContent());
         return toDto(memo, userId);
@@ -79,7 +81,7 @@ public class MemoService {
     @Transactional
     public void delete(Long teamId, Long memoId, Long userId) {
         Memo memo = memoRepo.findById(memoId)
-                .orElseThrow(() -> new IllegalArgumentException("메모가 없습니다."));
+                .orElseThrow(() -> new CoreApiException(ErrorCode.MEMO_NOT_FOUND)); // 메모 없음
         validateOwner(memo, teamId, userId);
         reactRepo.deleteByMemo_Id(memoId);   // 1) 좋아요 모두 삭제
         memoRepo.delete(memo);              // 2) 이제 메모 삭제
@@ -90,7 +92,7 @@ public class MemoService {
     @Transactional
     public MemoResponse toggleLike(Long teamId, Long memoId, User user) {
         Memo memo = memoRepo.findById(memoId)
-                .orElseThrow(() -> new IllegalArgumentException("메모가 없습니다."));
+                .orElseThrow(() -> new CoreApiException(ErrorCode.MEMO_NOT_FOUND)); // 메모 없음
         validateTeam(memo, teamId);
 
         Optional<MemoReaction> opt =
@@ -105,8 +107,6 @@ public class MemoService {
                     MemoReaction.create(memo, user));     // liked = true
         }
 
-
-
         return toDto(memo, user.getId());
     }
 
@@ -115,14 +115,14 @@ public class MemoService {
     private void validateTeam(Memo memo, Long teamId) {
         /* teamId 필드명이 teamId 이므로 getTeamId()로 비교 */
         if (!memo.getUtm().getTeam().getTeamId().equals(teamId)) {
-            throw new IllegalArgumentException("해당 팀 메모가 아닙니다.");
+            throw new CoreApiException(ErrorCode.MEMO_NOT_OF_THIS_TEAM); // 해당 팀 메모 아님
         }
     }
 
     private void validateOwner(Memo memo, Long teamId, Long userId) {
         validateTeam(memo, teamId);
         if (!memo.getUtm().getUser().getId().equals(userId)) {
-            throw new IllegalArgumentException("내가 작성한 메모가 아닙니다.");
+            throw new CoreApiException(ErrorCode.NOT_MY_MEMO); // 내가 작성한 메모 아님
         }
     }
 
@@ -135,16 +135,16 @@ public class MemoService {
         User author = m.getUtm().getUser();
         Team team   = m.getUtm().getTeam();
         Card authorCard = cardRepo.findByUserAndTeam(author, team)
-                .orElseThrow(() -> new IllegalStateException("카드가 없습니다"));
+                .orElseThrow(() -> new CoreApiException(ErrorCode.CARD_NOT_FOUND)); // 카드 없음
 
         String authorNickname = authorCard.getAdjective() + " " + authorCard.getProfileColor() + " " + authorCard.getAnimal();
-
 
         // 좋아요 한 사람 목록(형용사 + 색 + 동물)
         List<String> likeUsers = reactRepo.findByMemo_IdAndLikedTrue(m.getId())
                 .stream()
                 .map(r -> {
-                    Card c = cardRepo.findByUserAndTeam(r.getUser(), team).orElseThrow();
+                    Card c = cardRepo.findByUserAndTeam(r.getUser(), team)
+                            .orElseThrow(() -> new CoreApiException(ErrorCode.CARD_NOT_FOUND)); // 카드 없음
                     return c.getAdjective() + " " + c.getProfileColor() + " " + c.getAnimal();
                 })
                 .toList();
