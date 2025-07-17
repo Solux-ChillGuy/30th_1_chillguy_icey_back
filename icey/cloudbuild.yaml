@@ -1,0 +1,35 @@
+steps:
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      [
+        'build',
+        '-t',
+        'asia-northeast3-docker.pkg.dev/icey-466200/icey-repo/icey-backend:$SHORT_SHA',
+        '.'
+      ]
+
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      [
+        'push',
+        'asia-northeast3-docker.pkg.dev/icey-466200/icey-repo/icey-backend:$SHORT_SHA'
+      ]
+
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args:
+      [
+        'run',
+        'deploy',
+        'icey-backend',
+        '--image',
+        'asia-northeast3-docker.pkg.dev/icey-466200/icey-repo/icey-backend:$SHORT_SHA',
+        '--platform',
+        'managed',
+        '--region',
+        'asia-northeast3',
+        '--allow-unauthenticated'
+      ]
+
+images:
+  - 'asia-northeast3-docker.pkg.dev/icey-466200/icey-repo/icey-backend:$SHORT_SHA'
