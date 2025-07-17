@@ -2,6 +2,7 @@ package com.project.icey.app.service;
 
 import com.project.icey.app.domain.Card;
 import com.project.icey.app.domain.Letter;
+import com.project.icey.app.domain.NotificationType;
 import com.project.icey.app.domain.Team;
 import com.project.icey.app.dto.CardResponse;
 import com.project.icey.app.dto.LetterDetailResponse;
@@ -24,6 +25,7 @@ public class LetterService {
     private final CardRepository cardRepo;
     private final TeamRepository teamRepository;
     private final LetterRepository letterRepository;
+    private final NotificationService notificationService;
 
     //쪽지 작성화면 조회
     @Transactional(readOnly = true)
@@ -89,6 +91,19 @@ public class LetterService {
                 .build();
 
         letterRepository.save(letter);
+
+
+        //알림 서비스 연결
+        Long receiverUserId = receiverCard.getUser().getId();
+
+        String teamName = team.getTeamName(); // Team 엔티티에 맞는 필드명으로 수정!
+        String message = "[" + teamName + "]에 새로운 쪽지가 도착했습니다!";
+
+        notificationService.sendNotification(
+                receiverUserId,
+                NotificationType.LETTER,
+                message
+        );
     }
 
     //쪽지 상세 조회
