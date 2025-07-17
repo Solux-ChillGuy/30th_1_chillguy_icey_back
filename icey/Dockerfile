@@ -8,4 +8,8 @@ RUN gradle build -x test
 FROM openjdk:21
 WORKDIR /app
 COPY --from=build /home/gradle/project/build/libs/icey-0.0.1-SNAPSHOT.jar app.jar
+
+# 포트 8080 노출
+EXPOSE 8080
+
 ENTRYPOINT ["java", "-jar", "app.jar"]
