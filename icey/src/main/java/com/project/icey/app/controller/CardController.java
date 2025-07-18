@@ -4,6 +4,7 @@ import com.project.icey.app.dto.CardRequest;
 import com.project.icey.app.dto.CardResponse;
 import com.project.icey.app.dto.CustomUserDetails;
 import com.project.icey.app.service.CardService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -25,7 +26,7 @@ public class CardController {
 
     /* POST /api/cards - 템플릿 생성 */
     @PostMapping(params = "!teamId")
-    public CardResponse create(@RequestBody CardRequest req,
+    public CardResponse create(@Valid @RequestBody CardRequest req,
                                @AuthenticationPrincipal CustomUserDetails principal) {   
         return cardService.createTemplate(principal.getUser(), req);                      
     }
@@ -33,7 +34,7 @@ public class CardController {
     /* PATCH /api/cards/{id} - 템플릿 수정 */
     @PatchMapping("/{id}")
     public CardResponse update(@PathVariable Long id,
-                               @RequestBody CardRequest req,
+                               @Valid @RequestBody CardRequest req,
                                @AuthenticationPrincipal CustomUserDetails principal) {   
         return cardService.update(id, principal.getUser().getId(), req);                 
     }
