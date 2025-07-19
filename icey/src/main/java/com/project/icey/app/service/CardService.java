@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Random;
 
 @Service
@@ -24,96 +25,164 @@ public class CardService {
     private final CardRepository cardRepo;
     private final TeamRepository teamRepo;
 
-    /* ---------- 색상 팔레트 (나중에 수정) ---------- */
+    // 색상 팔레트
     private static final List<String> COLORS = List.of(
             "빨강", "파랑", "초록", "노랑", "주황",
             "보라", "분홍", "회색", "민트", "하양"
     );
     private static final Random RANDOM = new Random();
-    private String pickRandomColor() {
-        return COLORS.get(RANDOM.nextInt(COLORS.size()));
-    }
 
-    /* ---------- 조회 ---------- */
+    // [내 명함 템플릿 관련]
+
     @Transactional(readOnly = true)
     public List<CardResponse> listTemplates(Long userId) {
         return cardRepo.findByUserIdAndTeamIsNull(userId)
-                .stream().map(this::toDto).toList();
+                .stream()
+                .map(this::toDto)
+                .toList();
     }
 
-    @Transactional(readOnly = true)
-    public List<CardResponse> listTeamCards(Long teamId) {
-        return cardRepo.findByTeam_TeamId(teamId)
-                .stream().map(this::toDto).toList();
-    }
-
-    /* ---------- 템플릿 생성 ---------- */
     public CardResponse createTemplate(User user, CardRequest req) {
         Card tpl = toEntity(req);
         tpl.setUser(user);
-        tpl.setProfileColor(null);                // 템플릿엔 색 없음
+        tpl.setProfileColor(null); // 템플릿엔 색 없음
         return toDto(cardRepo.save(tpl));
     }
 
-    /* ---------- 템플릿 수정 (파생 카드 동기화) ---------- */
     public CardResponse update(Long tplId, Long userId, CardRequest req) {
         Card tpl = cardRepo.findById(tplId)
-                .orElseThrow(() -> new CoreApiException(ErrorCode.CARD_TEMPLATE_NOT_FOUND)); // 존재하지 않는 템플릿
+                .orElseThrow(() -> new CoreApiException(ErrorCode.CARD_TEMPLATE_NOT_FOUND));
         if (!tpl.getUser().getId().equals(userId))
-            throw new CoreApiException(ErrorCode.NOT_MY_TEMPLATE); // 내 템플릿이 아님
+            throw new CoreApiException(ErrorCode.NOT_MY_TEMPLATE);
 
         apply(tpl, req);
         tpl.regenerateNickname();
 
-        // origin = tplId 파생 카드 전부 동기화
+        // origin = tplId 파생 카드 모두 동기화
         cardRepo.findByOriginId(tplId).forEach(derived -> {
             apply(derived, req);
             derived.regenerateNickname();
         });
+
         return toDto(tpl);
     }
 
-    /* ---------- 템플릿 삭제 ---------- */
     public void delete(Long tplId, Long userId) {
         Card tpl = cardRepo.findById(tplId)
-                .orElseThrow(() -> new CoreApiException(ErrorCode.CARD_TEMPLATE_NOT_FOUND)); // 존재하지 않는 템플릿
+                .orElseThrow(() -> new CoreApiException(ErrorCode.CARD_TEMPLATE_NOT_FOUND));
         if (!tpl.getUser().getId().equals(userId))
-            throw new CoreApiException(ErrorCode.NOT_MY_TEMPLATE); // 내 템플릿이 아님
+            throw new CoreApiException(ErrorCode.NOT_MY_TEMPLATE);
         if (cardRepo.existsByOriginId(tplId))
-            throw new CoreApiException(ErrorCode.TEMPLATE_IN_USE); // 다른 팀에서 사용 중
+            throw new CoreApiException(ErrorCode.TEMPLATE_IN_USE);
 
         cardRepo.delete(tpl);
     }
 
-    /* ---------- 팀 적용 ---------- */
+    // [팀 명함 관련]
+
+    @Transactional(readOnly = true)
+    public List<CardResponse> listTeamCards(Long teamId) {
+        return cardRepo.findByTeam_TeamId(teamId)
+                .stream()
+                .map(this::toDto)
+                .toList();
+    }
+
+    /*
+     팀에 명함을 적용하기
+     - 기존 명함이 있으면 내용물과 원본 링크만 교체, 색상은 그대로 유지
+     - 기존 명함이 없으면 새로 만들고, 사용 가능한 색상 배정
+
+     applyTemplate 랑 ensureMyCard는 비슷한 기능을 하는데 중복이어도 메서드 확실히 하는 게 좋다고 해서 유지
+     */
+
     public CardResponse applyTemplate(Long teamId, Long tplId, User user) {
         Card tpl = cardRepo.findById(tplId)
-                .orElseThrow(() -> new CoreApiException(ErrorCode.CARD_TEMPLATE_NOT_FOUND)); // 템플릿이 없음
+                .orElseThrow(() -> new CoreApiException(ErrorCode.CARD_TEMPLATE_NOT_FOUND));
+        Team team = teamRepo.findById(teamId)
+                .orElseThrow(() -> new CoreApiException(ErrorCode.TEAM_NOT_FOUND));
+
+
+        Optional<Card> existingCardOpt = cardRepo.findByTeam_TeamIdAndUserId(teamId, user.getId());
+
+        if (existingCardOpt.isPresent()) {
+            // 1. 기존 명함이 있으면: 내용물과 원본 링크만 교체, 색상은 그대로 유지
+            Card existingCard = existingCardOpt.get();
+            apply(existingCard, toRequest(tpl)); // 템플릿의 내용을 기존 카드에 덮어쓰기
+            existingCard.setOrigin(tpl);         // 원본(template) 정보만 교체
+            existingCard.regenerateNickname();
+            return toDto(cardRepo.save(existingCard));
+
+        } else {
+            // 2. 기존 명함이 없으면(팀에 처음 입장): 새로 만들고 사용 가능한 색상 배정. 안 쓸 것 같긴 한데 혹시 몰라서
+            Card clone = cloneFromTemplate(tpl, user, team);
+            clone.setProfileColor(pickAvailableColor(teamId)); //오직 이때만 색상 할당
+            return toDto(cardRepo.save(clone));
+        }
+    }
+
+    /*
+     팀에 입장할 때 내 명함을 자동 생성/보장하기
+     - 이미 팀카드가 있으면 그대로 반환
+     - 없으면 최초 템플릿에서 복사하여 새로 생성하고, 사용 가능한 색상 배정
+     */
+
+    public CardResponse ensureMyCard(Long teamId, User user) {
+        // 이미 팀카드가 있으면 그대로 반환
+        Optional<Card> existing = cardRepo.findByTeam_TeamIdAndUserId(teamId, user.getId());
+        if (existing.isPresent()) return toDto(existing.get());
 
         Team team = teamRepo.findById(teamId)
-                .orElseThrow(() -> new CoreApiException(ErrorCode.TEAM_NOT_FOUND)); // 팀이 없음
+                .orElseThrow(() -> new CoreApiException(ErrorCode.TEAM_NOT_FOUND));
 
-        // 기존 팀 명함 있으면 삭제
-        cardRepo.findByTeam_TeamIdAndUserId(teamId, user.getId())
-                .ifPresent(cardRepo::delete);
-
-        // 복제 + 색상 랜덤
+        Card tpl = getOrCreateFirstTemplate(user);
         Card clone = cloneFromTemplate(tpl, user, team);
-        clone.setProfileColor(pickRandomColor());
+        clone.setProfileColor(pickAvailableColor(teamId));
         return toDto(cardRepo.save(clone));
     }
 
-    /* 템플릿 만든 뒤 바로 적용 => 앞으로 새 명함 만들고 난 뒤 교체 버튼 누를 거면 사용 안 함
-    public CardResponse createAndApply(Long teamId, CardRequest req, User user) {
-        Card tpl = toEntity(req);
+    // 내부 유틸/보조 메서드
+
+
+    private String pickAvailableColor(Long teamId) {
+        List<String> used = cardRepo.findByTeam_TeamId(teamId)
+                .stream()
+                .map(Card::getProfileColor)
+                .toList();
+        List<String> available = COLORS.stream()
+                .filter(c -> !used.contains(c))
+                .toList();
+        if (available.isEmpty()) {
+            throw new CoreApiException(ErrorCode.NO_AVAILABLE_COLOR);
+        }
+        return available.get(RANDOM.nextInt(available.size()));
+    }
+
+    /*
+     - 사용자에게 최초의 명함 템플릿을 보장용!
+     - 사용자가 처음 가입했을 때 기본 템플릿 명함 생성
+     - 이미 템플릿이 있다면 기존 템플릿을 반환하기!(따로 조건 있으면 추가. 지금은 그냥 첫번째)
+     */
+    private Card getOrCreateFirstTemplate(User user) {
+        List<Card> templates = cardRepo.findByUserIdAndTeamIsNull(user.getId());
+        if (!templates.isEmpty()) return templates.getFirst();
+
+        // 초기명함1 생성(나중에 수정)
+        CardRequest init = new CardRequest();
+        init.setAdjective("수줍은");
+        init.setAnimal("돼지");
+        init.setMbti("INFP");
+        init.setHobby("독서");
+        init.setSecretTip("사실 수면 시간이 12시간이에요");
+        init.setTmi("소싯적 휘파람 챔피언(교정하고 몰락함)");
+        init.setAccessory("crown");
+
+        Card tpl = toEntity(init);
         tpl.setUser(user);
         tpl.setProfileColor(null);
-        cardRepo.save(tpl);
-        return applyTemplate(teamId, tpl.getId(), user);
+        return cardRepo.save(tpl);
     }
-    */
 
-    /* ---------- 내부 유틸 ---------- */
     private Card toEntity(CardRequest r) {
         return Card.builder()
                 .adjective(r.getAdjective())
@@ -123,7 +192,7 @@ public class CardService {
                 .hobby(r.getHobby())
                 .secretTip(r.getSecretTip())
                 .tmi(r.getTmi())
-                .profileColor(null)              // 템플릿은 색 없음
+                .profileColor(null)
                 .build();
     }
 
@@ -137,13 +206,28 @@ public class CardService {
         c.setTmi(r.getTmi());
     }
 
+    private CardRequest toRequest(Card card) {
+        CardRequest req = new CardRequest();
+        req.setAdjective(card.getAdjective());
+        req.setAnimal(card.getAnimal());
+        req.setAccessory(card.getAccessory());
+        req.setMbti(card.getMbti());
+        req.setHobby(card.getHobby());
+        req.setSecretTip(card.getSecretTip());
+        req.setTmi(card.getTmi());
+        return req;
+    }
+
     private CardResponse toDto(Card c) {
+        Long tplId = (c.getOrigin() != null) ? c.getOrigin().getId() : c.getId();
         return new CardResponse(
-                c.getId(),
+                c.getId(),             // cardId
+                tplId,                 // templateId
+                c.getUser().getId(),   // userId
                 c.getNickname(),
                 c.getAnimal(),
-                c.getProfileColor(),            // 색 이름 ("빨강" 등) — 템플릿이면 null
-                c.getAccessory(),               // 악세서리 코드 (null 가능)
+                c.getProfileColor(),
+                c.getAccessory(),
                 c.getHobby(),
                 c.getMbti(),
                 c.getSecretTip(),
@@ -158,12 +242,12 @@ public class CardService {
                 .origin(tpl)
                 .adjective(tpl.getAdjective())
                 .animal(tpl.getAnimal())
-                .accessory(tpl.getAccessory())  // NEW
+                .accessory(tpl.getAccessory())
                 .mbti(tpl.getMbti())
                 .hobby(tpl.getHobby())
                 .secretTip(tpl.getSecretTip())
                 .tmi(tpl.getTmi())
-                .profileColor(null)             // 나중에 pickRandomColor()로 세팅
+                .profileColor(null) // 나중에 setProfileColor
                 .build();
     }
 }

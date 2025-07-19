@@ -20,4 +20,8 @@ public class CardRequest {
     private String tmi;
     @NotBlank
     private String accessory;
+    //프로필 색은 null 가능
+    private String profileColor;
+
+
 }

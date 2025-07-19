@@ -93,6 +93,7 @@ public enum ErrorCode {
     CARD_TEMPLATE_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 템플릿입니다."),
     NOT_MY_TEMPLATE(HttpStatus.FORBIDDEN, "내 템플릿이 아닙니다."),
     TEMPLATE_IN_USE(HttpStatus.CONFLICT, "다른 팀에서 사용 중인 템플릿은 삭제할 수 없습니다."),
+    NO_AVAILABLE_COLOR(HttpStatus.BAD_REQUEST,"사용 가능한 색상이 없습니다."),
     // Memo 관련
     MEMO_NOT_FOUND(HttpStatus.NOT_FOUND, "메모가 없습니다."),
     MEMO_BOARD_LIMIT_EXCEEDED(HttpStatus.BAD_REQUEST, "게시판이 가득 찼습니다."),
