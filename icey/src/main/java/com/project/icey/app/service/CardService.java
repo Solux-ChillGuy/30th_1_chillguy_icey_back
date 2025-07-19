@@ -165,7 +165,7 @@ public class CardService {
      */
     private Card getOrCreateFirstTemplate(User user) {
         List<Card> templates = cardRepo.findByUserIdAndTeamIsNull(user.getId());
-        if (!templates.isEmpty()) return templates.get(0);
+        if (!templates.isEmpty()) return templates.getFirst();
 
         // 초기명함1 생성(나중에 수정)
         CardRequest init = new CardRequest();
