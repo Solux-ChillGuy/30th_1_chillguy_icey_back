@@ -16,7 +16,7 @@ public class ScheduleVoteResponse {
     @Getter
     @AllArgsConstructor
     public static class VoteByDate {
-        @JsonFormat(pattern = "MM.dd")
+        @JsonFormat(pattern = "YYYY-MM-dd")
         private LocalDate date;
         private List<Integer> hours;
     }

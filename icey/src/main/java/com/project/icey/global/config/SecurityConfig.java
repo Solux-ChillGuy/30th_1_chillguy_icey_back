@@ -15,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -90,6 +91,7 @@ public class SecurityConfig implements WebMvcConfigurer {
                                 "/api/verify/email", "/api/verify/resend", "/api/verify/reset-password", "/sse-test.html", "login.html", "/api/notification/subscribe",
                                 "/swagger-ui.html", "/v3/api-docs/**", "/swagger-ui/**","/login/**","/api/auth/kakao","/login/oauth2/**")
                         .permitAll() // 특정 요청 허용
+                        .requestMatchers(HttpMethod.GET, "/api/teams/invitation/**").permitAll()  //securityfilter에 추가하였습니다!
                         .requestMatchers("/api/rewards/update/**").hasAuthority("ADMIN") // API 권한 제한
                         .requestMatchers("/api/rewards/list/**").hasAnyAuthority("USER", "ADMIN")
                         .anyRequest().authenticated() // 나머지 요청은 인증 필요

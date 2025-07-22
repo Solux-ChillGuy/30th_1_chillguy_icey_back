@@ -17,7 +17,7 @@ public class ScheduleVoteSummaryResponse {
     @Getter
     @AllArgsConstructor
     public static class SummaryByDate {
-        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "MM.dd")
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "YYYY-MM-dd")
         private LocalDate date;
         private List<HourVote> hourVotes;
     }
