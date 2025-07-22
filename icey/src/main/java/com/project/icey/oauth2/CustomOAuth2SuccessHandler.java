@@ -37,9 +37,9 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
     private final ObjectMapper objectMapper;
     private final OAuth2AuthorizedClientService authorizedClientService;
 
+
     @Value("${app.oauth2.frontend-redirect-uri}")
     private String redirectUri;
-
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
@@ -85,6 +85,7 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
         String refreshToken = tokenService.createRefreshToken();
         user.setRefreshToken(refreshToken);
         userRepository.save(user);
+
 
         // ✅ 프론트 리다이렉트 URL 조립
         String targetUrl = UriComponentsBuilder.fromUriString(redirectUri)

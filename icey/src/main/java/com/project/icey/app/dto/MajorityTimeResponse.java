@@ -18,7 +18,7 @@ public class MajorityTimeResponse {
     @Getter
     @AllArgsConstructor
     public static class AvailableTimeByDate {
-        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy.MM.dd")
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "YYYY-MM-dd")
         private LocalDate date;
         private List<String> availableHours;
     }

@@ -28,8 +28,9 @@ public class TeamService {
     private final UserTeamRepository userteamRepository;
     private final CardRepository cardRepository;
     private final ScheduleRepository scheduleRepository;
+    private final CardService cardService;
 
-    @Value("${app.base-url}")
+    @Value("${app.frontEndBaseUrl}")
     private String baseUrl;
 
     public TeamResponse createTeam(CreateTeamRequest request, User creator){
@@ -47,6 +48,9 @@ public class TeamService {
                 .build();
 
         userteamRepository.save(utm);
+
+        //사용자가 팀 생성과 동시에 팀 관련 명함이 생성될 수 있도록
+        cardService.ensureMyCard(team.getTeamId(), creator);
 
         //int memberCnt = userteamRepository.countByTeam(team);
         long days = Duration.between(LocalDateTime.now(), team.getExpiration()).toDays();
@@ -109,14 +113,17 @@ public class TeamService {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "이미 팀에 가입되어 있습니다."); //409 Conflict로 변경
         }
 
-
-
         UserTeamManager relation = UserTeamManager.builder()
                 .user(user)
                 .team(team)
                 .role(UserRole.MEMBER)
                 .build();
         userteamRepository.save(relation);
+
+        //팀에 가입됨과 동시에 명함 연결
+        cardService.ensureMyCard(team.getTeamId(), user);
+
+
     }
 
     @Transactional(readOnly = true)
@@ -165,7 +172,8 @@ public class TeamService {
                 dDay,
                 role.name(),
                 hasSchedule,
-                confirmedDate
+                confirmedDate,
+                team.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
         );
 
     }

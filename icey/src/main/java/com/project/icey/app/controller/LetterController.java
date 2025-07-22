@@ -20,7 +20,7 @@ public class LetterController {
     private final LetterService letterService;
 
     //쪽지 작성화면 조회
-    @GetMapping("/teams/{teamId}/cards/{cardId}/letters")
+    @GetMapping("/teams/{teamId}/cards/{cardId}/letter-info")
     public ResponseEntity<ApiResponseTemplete<WriteInfoResponse>> getWriteInfo(@PathVariable Long teamId,
                                           @PathVariable("cardId") Long receiverCardId,
                                           @AuthenticationPrincipal CustomUserDetails userDetails) {
