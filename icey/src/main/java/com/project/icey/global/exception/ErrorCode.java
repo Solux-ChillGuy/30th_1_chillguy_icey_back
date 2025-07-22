@@ -89,6 +89,20 @@ public enum ErrorCode {
     TIME_SLOT_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 시간대가 존재하지 않습니다."),
 
 
+    // Card&Template 관련
+    CARD_TEMPLATE_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 템플릿입니다."),
+    NOT_MY_TEMPLATE(HttpStatus.FORBIDDEN, "내 템플릿이 아닙니다."),
+    TEMPLATE_IN_USE(HttpStatus.CONFLICT, "다른 팀에서 사용 중인 템플릿은 삭제할 수 없습니다."),
+    NO_AVAILABLE_COLOR(HttpStatus.BAD_REQUEST,"사용 가능한 색상이 없습니다."),
+    // Memo 관련
+    MEMO_NOT_FOUND(HttpStatus.NOT_FOUND, "메모가 없습니다."),
+    MEMO_BOARD_LIMIT_EXCEEDED(HttpStatus.BAD_REQUEST, "게시판이 가득 찼습니다."),
+    NOT_MY_MEMO(HttpStatus.FORBIDDEN, "내가 작성한 메모가 아닙니다."),
+    MEMO_NOT_OF_THIS_TEAM(HttpStatus.BAD_REQUEST, "해당 팀 메모가 아닙니다."),
+    CARD_NOT_FOUND(HttpStatus.NOT_FOUND, "카드가 없습니다."),
+
+
+
     // Server
     IMAGE_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "이미지 분석 서버 오류가 발생했습니다."),
     NO_COUNTS_DATA(HttpStatus.BAD_REQUEST, "counts 데이터를 찾을 수 없습니다."),
