@@ -14,12 +14,14 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
 import java.util.Map;
@@ -34,6 +36,10 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
     private final UserRepository userRepository;
     private final ObjectMapper objectMapper;
     private final OAuth2AuthorizedClientService authorizedClientService;
+
+    @Value("${app.oauth2.frontend-redirect-uri}")
+    private String redirectUri;
+
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
@@ -79,7 +85,7 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
         String refreshToken = tokenService.createRefreshToken();
         user.setRefreshToken(refreshToken);
         userRepository.save(user);
-
+/*
         Map<String, String> responseData = Map.of(
                 "accessToken", accessToken,
                 "email", email,
@@ -91,5 +97,13 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
         objectMapper.writeValue(response.getWriter(),
                 ApiResponseTemplete.success(SuccessCode.LOGIN_USER_SUCCESS, responseData));
     }
+*/
 
+        // ✅ 프론트 리다이렉트 URL 조립
+        String targetUrl = UriComponentsBuilder.fromUriString(redirectUri)
+                .queryParam("accessToken", accessToken)
+                .build().toUriString();
+
+        response.sendRedirect(targetUrl);
+    }
 }
