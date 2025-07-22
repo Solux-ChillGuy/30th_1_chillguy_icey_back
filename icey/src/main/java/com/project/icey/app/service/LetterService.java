@@ -2,6 +2,7 @@ package com.project.icey.app.service;
 
 import com.project.icey.app.domain.Card;
 import com.project.icey.app.domain.Letter;
+import com.project.icey.app.domain.NotificationType;
 import com.project.icey.app.domain.Team;
 import com.project.icey.app.dto.CardResponse;
 import com.project.icey.app.dto.LetterDetailResponse;
@@ -24,6 +25,7 @@ public class LetterService {
     private final CardRepository cardRepo;
     private final TeamRepository teamRepository;
     private final LetterRepository letterRepository;
+    private final NotificationService notificationService;
 
     //쪽지 작성화면 조회
     @Transactional(readOnly = true)
@@ -36,7 +38,7 @@ public class LetterService {
                 .orElseThrow(() -> new IllegalArgumentException("받는 명함이 존재하지 않습니다."));
 
         Card sender = cardRepo.findByTeam_TeamIdAndUserId(teamId, currentUserId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 팀에서 보낼 명함이 없습니다."));
+                .orElseThrow(() -> new IllegalArgumentException("해당 유저는 이 팀에 소속되어있지 않습니다."));
 
         //이렇게 되면 현재 사실상 보내는 사람과 받는 사람이 같은 팀내에 있는가에 대한 유효성 검사가 빠진 상태임.
         if (!receiver.getTeam().getTeamId().equals(teamId)) {
@@ -44,7 +46,7 @@ public class LetterService {
         }
 
 
-        CardResponse receiverCardResponse = new CardResponse(
+        WriteInfoResponse.ReceiverCardInfo receiverCardInfo = new WriteInfoResponse.ReceiverCardInfo(
                 receiver.getId(),
                 receiver.getNickname(),
                 receiver.getAnimal(),
@@ -53,7 +55,8 @@ public class LetterService {
                 receiver.getMbti(),
                 receiver.getHobby(),
                 receiver.getSecretTip(),
-                receiver.getTmi()
+                receiver.getTmi(),
+                receiver.getTeam().getTeamName()
         );
 
         String receiverTeamName = receiver.getTeam() != null ? receiver.getTeam().getTeamName() : null;
@@ -61,8 +64,7 @@ public class LetterService {
 
         return new WriteInfoResponse(
                 new WriteInfoResponse.CardInfo(sender.getId(), sender.getNickname()),
-                receiverCardResponse,
-                receiverTeamName
+                receiverCardInfo
         );
     }
 
@@ -89,6 +91,19 @@ public class LetterService {
                 .build();
 
         letterRepository.save(letter);
+
+
+        //알림 서비스 연결
+        Long receiverUserId = receiverCard.getUser().getId();
+
+        String teamName = team.getTeamName(); // Team 엔티티에 맞는 필드명으로 수정!
+        String message = "[" + teamName + "]에 새로운 쪽지가 도착했습니다!";
+
+        notificationService.sendNotification(
+                receiverUserId,
+                NotificationType.LETTER,
+                message
+        );
     }
 
     //쪽지 상세 조회

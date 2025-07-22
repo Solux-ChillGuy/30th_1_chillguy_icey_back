@@ -1,5 +1,6 @@
 package com.project.icey.app.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -16,4 +17,5 @@ public class TeamDetailResponse {
     private String role;
     private boolean hasSchedule;
     private String confirmedDate;
+    private String createdAt;
 }

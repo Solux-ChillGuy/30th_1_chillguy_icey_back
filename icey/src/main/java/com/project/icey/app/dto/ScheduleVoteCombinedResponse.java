@@ -19,7 +19,7 @@ public class ScheduleVoteCombinedResponse {
     @Getter
     @AllArgsConstructor
     public static class VoteByDateResponse {
-        @JsonFormat(pattern = "MM.dd")
+        @JsonFormat(pattern = "YYYY-MM-dd")
         private LocalDate date;
         private List<Integer> hours;
     }
@@ -27,7 +27,7 @@ public class ScheduleVoteCombinedResponse {
     @Getter
     @AllArgsConstructor
     public static class SummaryByDateResponse {
-        @JsonFormat(pattern = "MM.dd")
+        @JsonFormat(pattern = "YYYY-MM-dd")
         private LocalDate date;
         private List<HourVote> hourVotes;
     }

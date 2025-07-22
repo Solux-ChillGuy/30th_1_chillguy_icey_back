@@ -27,7 +27,7 @@ public enum SuccessCode {
     // 201 Created, Delete
     CREATE_POST_SUCCESS(HttpStatus.CREATED, "게시글 생성이 완료되었습니다."),
     CREATE_TEAM_SUCCESS(HttpStatus.CREATED, "팀이 생성되었습니다."),
-    LETTER_SEND_SUCCESS(HttpStatus.CREATED, "쪽지를 성공적으로 보냈습니다."),
+    LETTER_SEND_SUCCESS(HttpStatus.CREATED, "쪽지를 보내기를 완료하였습니다!"),
     DELETE_ATTENDANCE_SUCCESS(HttpStatus.NO_CONTENT, "작업 현장 탈퇴가 완료되었습니다."),
     DELETE_REPORT_SUCCESS(HttpStatus.NO_CONTENT, "신고 내역이 정상적으로 삭제되었습니다. "),
     DELETE_POST_SUCCESS(HttpStatus.NO_CONTENT, "게시글이 성공적으로 삭제 되었습니다. "),
