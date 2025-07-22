@@ -165,7 +165,8 @@ public class TeamService {
                 dDay,
                 role.name(),
                 hasSchedule,
-                confirmedDate
+                confirmedDate,
+                team.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
         );
 
     }
