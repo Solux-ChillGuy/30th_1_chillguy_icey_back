@@ -48,6 +48,14 @@ public class CardController {
         cardService.delete(id, principal.getUser().getId());
     }
 
+    /* 템플릿별 사용중인 팀 id 리스트 조회 API */
+    @GetMapping("/{templateId}/used-teams")
+    public List<Long> getUsedTeamIds(@PathVariable Long templateId) {
+        return cardService.getTeamIdsUsingTemplate(templateId);
+    }
+
+
+
     // 2. 팀 명함 관련
 
     /* 팀 명함 목록 조회 (내 명함 식별 포함) */

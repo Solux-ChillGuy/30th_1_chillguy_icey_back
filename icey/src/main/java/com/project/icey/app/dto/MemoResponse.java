@@ -13,6 +13,6 @@ public class MemoResponse {
     private String content;
     private boolean liked;
     private long likeCount;
-    private List<String> likeUsers;
+    private List<LikeUser> likeUsers; //닉네임 아니라 animal&profile color map 으로
     private LocalDateTime createdAt;
 }
