@@ -85,25 +85,11 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
         String refreshToken = tokenService.createRefreshToken();
         user.setRefreshToken(refreshToken);
         userRepository.save(user);
-/*
-        Map<String, String> responseData = Map.of(
-                "accessToken", accessToken,
-                "email", email,
-                "userName", name
-        );
-
-        response.setStatus(HttpServletResponse.SC_OK);
-        response.setContentType("application/json;charset=UTF-8");
-        objectMapper.writeValue(response.getWriter(),
-                ApiResponseTemplete.success(SuccessCode.LOGIN_USER_SUCCESS, responseData));
-    }
-*/
 
         // ✅ 프론트 리다이렉트 URL 조립
         String targetUrl = UriComponentsBuilder.fromUriString(redirectUri)
                 .queryParam("accessToken", accessToken)
                 .build().toUriString();
-
         response.sendRedirect(targetUrl);
     }
 }
