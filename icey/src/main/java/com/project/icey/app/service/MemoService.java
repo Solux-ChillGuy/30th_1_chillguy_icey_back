@@ -1,6 +1,7 @@
 package com.project.icey.app.service;
 
 import com.project.icey.app.domain.*;
+import com.project.icey.app.dto.LikeUser;
 import com.project.icey.app.dto.MemoRequest;
 import com.project.icey.app.dto.MemoResponse;
 import com.project.icey.app.repository.*;
@@ -18,8 +19,8 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class MemoService {
 
-    /* 팀당 메모 한도 (없으면 기본 100) */
-    @Value("${memo.board-limit:100}")
+    /* 팀당 메모 한도 (없으면 기본 18) */
+    @Value("${memo.board-limit:18}")
     private int boardLimit;
 
     private final MemoRepository          memoRepo;
@@ -139,15 +140,16 @@ public class MemoService {
 
         String authorNickname = authorCard.getAdjective() + " " + authorCard.getProfileColor() + " " + authorCard.getAnimal();
 
-        // 좋아요 한 사람 목록(형용사 + 색 + 동물)
-        List<String> likeUsers = reactRepo.findByMemo_IdAndLikedTrue(m.getId())
+        // 좋아요 한 사람 목록(형용사, 동물)
+        List<LikeUser> likeUsers = reactRepo.findByMemo_IdAndLikedTrue(m.getId())
                 .stream()
                 .map(r -> {
                     Card c = cardRepo.findByUserAndTeam(r.getUser(), team)
-                            .orElseThrow(() -> new CoreApiException(ErrorCode.CARD_NOT_FOUND)); // 카드 없음
-                    return c.getAdjective() + " " + c.getProfileColor() + " " + c.getAnimal();
+                            .orElseThrow(() -> new CoreApiException(ErrorCode.CARD_NOT_FOUND));
+                    return new LikeUser(c.getProfileColor(), c.getAnimal());
                 })
                 .toList();
+
 
         return new MemoResponse(
                 m.getId(),
