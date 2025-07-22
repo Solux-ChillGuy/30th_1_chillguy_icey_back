@@ -37,9 +37,9 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
     private final ObjectMapper objectMapper;
     private final OAuth2AuthorizedClientService authorizedClientService;
 
+
     @Value("${app.oauth2.frontend-redirect-uri}")
     private String redirectUri;
-
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
@@ -96,6 +96,12 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
         response.setContentType("application/json;charset=UTF-8");
         objectMapper.writeValue(response.getWriter(),
                 ApiResponseTemplete.success(SuccessCode.LOGIN_USER_SUCCESS, responseData));
+
+ */
+        String targetUrl = UriComponentsBuilder.fromUriString(redirectUri)
+                .queryParam("accessToken", accessToken)
+                .build().toUriString();
+        response.sendRedirect(targetUrl);
     }
 */
 
