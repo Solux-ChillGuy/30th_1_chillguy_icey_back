@@ -61,5 +61,5 @@ gemini:
 app:
   base-url: ${APP_BASE_URL:http://localhost:8080/icey}
   oauth2:
-    redirect-uri: ${FRONTEND_BASE_URL}/oauth/callback
+    frontend-redirect-uri: ${FRONTEND_BASE_URL}/oauth/callback
   frontEndBaseUrl: ${FRONTEND_BASE_URL:http://localhost:5173}

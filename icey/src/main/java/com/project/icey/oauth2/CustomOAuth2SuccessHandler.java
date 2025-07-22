@@ -37,7 +37,8 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
     private final ObjectMapper objectMapper;
     private final OAuth2AuthorizedClientService authorizedClientService;
 
-    @Value("${app.oauth2.redirect-uri}")
+
+    @Value("${app.oauth2.frontend-redirect-uri}")
     private String redirectUri;
 
     @Override
@@ -102,5 +103,13 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
                 .build().toUriString();
         response.sendRedirect(targetUrl);
     }
+*/
 
+        // ✅ 프론트 리다이렉트 URL 조립
+        String targetUrl = UriComponentsBuilder.fromUriString(redirectUri)
+                .queryParam("accessToken", accessToken)
+                .build().toUriString();
+
+        response.sendRedirect(targetUrl);
+    }
 }
