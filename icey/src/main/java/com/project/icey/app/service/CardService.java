@@ -26,9 +26,10 @@ public class CardService {
     private final TeamRepository teamRepo;
 
     // 색상 팔레트
+    //7.22 번호별로 바꾸기(색깔이 아니라)
     private static final List<String> COLORS = List.of(
             "빨강", "파랑", "초록", "노랑", "주황",
-            "보라", "분홍", "회색", "민트", "하양"
+            "보라", "분홍", "회색", "검정", "하양"
     );
     private static final Random RANDOM = new Random();
 
@@ -77,6 +78,19 @@ public class CardService {
 
         cardRepo.delete(tpl);
     }
+
+    /* 이 템플릿이 사용된 팀 id 리스트 반환 */
+    public List<Long> getTeamIdsUsingTemplate(Long tplId) {
+        return cardRepo.findByOriginId(tplId)
+                .stream()
+                .filter(card -> card.getTeam() != null)
+                .map(card -> card.getTeam().getTeamId())
+                .distinct()
+                .toList();
+
+    }
+
+
 
     // [팀 명함 관련]
 
