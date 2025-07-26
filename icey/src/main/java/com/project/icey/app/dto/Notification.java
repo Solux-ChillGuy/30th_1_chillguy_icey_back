@@ -10,5 +10,5 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class Notification {
     private NotificationType type;
-    private String content;
+    private String teamName;
 }
