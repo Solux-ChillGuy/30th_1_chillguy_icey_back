@@ -6,6 +6,7 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public class InvitationTeamInfoResponse {
+    private final Long teamId;
     private final String teamName;
     private final String leaderName;
 }

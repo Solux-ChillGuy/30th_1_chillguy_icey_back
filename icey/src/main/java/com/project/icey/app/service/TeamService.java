@@ -221,6 +221,7 @@ public class TeamService {
 
 
         return new InvitationTeamInfoResponse(
+                team.getTeamId(),
                 team.getTeamName(),
                 leaderNickname
         );
