@@ -19,4 +19,5 @@ public class TeamDetailResponse {
     private String confirmedDate;
     private String createdAt;
     private boolean isAllVoted;
+    private int confirmedHour;
 }

@@ -158,6 +158,7 @@ public class TeamService {
         boolean hasSchedule = scheduleRepository.existsByTeam_TeamId(teamId);
         String confirmedDate = null;
         boolean isAllVoted = false;
+        int confirmedHour = 0;
         if (hasSchedule) {
             Schedule schedule = scheduleRepository.findByTeam_TeamId(teamId)
                     .orElse(null);
@@ -169,6 +170,7 @@ public class TeamService {
 
             if (schedule != null && schedule.isConfirmed() && schedule.getConfirmedDate() != null) {
                 confirmedDate = schedule.getConfirmedDate().toString();
+                confirmedHour = schedule.getConfirmedHour();
             }
         }
 
@@ -183,7 +185,8 @@ public class TeamService {
                 hasSchedule,
                 confirmedDate,
                 team.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")),
-                isAllVoted
+                isAllVoted,
+                confirmedHour
         );
 
     }
