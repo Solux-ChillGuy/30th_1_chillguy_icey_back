@@ -102,7 +102,7 @@ public class LetterService {
         notificationService.sendNotification(
                 receiverUserId,
                 NotificationType.LETTER,
-                message
+                teamName
         );
     }
 
