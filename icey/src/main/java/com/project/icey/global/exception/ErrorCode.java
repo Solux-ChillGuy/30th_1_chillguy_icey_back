@@ -80,6 +80,7 @@ public enum ErrorCode {
     //Team
     TEAM_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 팀이 존재하지 않습니다."),
     USER_NOT_IN_TEAM(HttpStatus.FORBIDDEN, "해당 유저는 이 팀의 구성원이 아닙니다."),
+    ALREADY_JOINED(HttpStatus.CONFLICT, "이미 팀에 가입되어 있습니다."),
 
     //Schedule
     NOT_LEADER(HttpStatus.FORBIDDEN, "팀장만이 이 기능을 이용할 수 있습니다."),

@@ -3,6 +3,8 @@ package com.project.icey.app.service;
 import com.project.icey.app.domain.*;
 import com.project.icey.app.dto.*;
 import com.project.icey.app.repository.*;
+import com.project.icey.global.dto.ApiResponseTemplete;
+import com.project.icey.global.exception.AlreadyJoinedException;
 import com.project.icey.global.exception.ErrorCode;
 import com.project.icey.global.exception.model.CoreApiException;
 import lombok.RequiredArgsConstructor;
@@ -17,7 +19,9 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -29,6 +33,8 @@ public class TeamService {
     private final CardRepository cardRepository;
     private final ScheduleRepository scheduleRepository;
     private final CardService cardService;
+    private final ScheduleVoteRepository scheduleVoteRepository;
+
 
     @Value("${app.frontEndBaseUrl}")
     private String baseUrl;
@@ -110,7 +116,7 @@ public class TeamService {
         }
 
         if (userteamRepository.existsByUserAndTeam(user, team)) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "이미 팀에 가입되어 있습니다."); //409 Conflict로 변경
+            throw new AlreadyJoinedException(team.getTeamId()); //409 Conflict로 변경
         }
 
         UserTeamManager relation = UserTeamManager.builder()
@@ -155,11 +161,20 @@ public class TeamService {
         //정해진 약속잡기가 있는지 조회
         boolean hasSchedule = scheduleRepository.existsByTeam_TeamId(teamId);
         String confirmedDate = null;
+        boolean isAllVoted = false;
+        int confirmedHour = 0;
         if (hasSchedule) {
             Schedule schedule = scheduleRepository.findByTeam_TeamId(teamId)
                     .orElse(null);
+
+            // 팀 전체가 투표했는지 계산
+            Long votedCount = scheduleVoteRepository.countDistinctVotersByScheduleId(schedule.getScheduleId());
+            int totalMembers = team.getMembers().size();
+            isAllVoted = (votedCount != null && votedCount == totalMembers);
+
             if (schedule != null && schedule.isConfirmed() && schedule.getConfirmedDate() != null) {
                 confirmedDate = schedule.getConfirmedDate().toString();
+                confirmedHour = schedule.getConfirmedHour();
             }
         }
 
@@ -173,7 +188,9 @@ public class TeamService {
                 role.name(),
                 hasSchedule,
                 confirmedDate,
-                team.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+                team.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")),
+                isAllVoted,
+                confirmedHour
         );
 
     }

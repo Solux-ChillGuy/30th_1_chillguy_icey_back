@@ -277,12 +277,15 @@ public class ScheduleService {
     }
 
     private String convertToTimeFormat(int hour) {
-        if (hour < 12) {
-            return String.format("AM %d:00", hour);
-        } else if (hour == 12) {
+        int normalized = hour % 24;
+        if (normalized == 0) {
+            return "AM 12:00";
+        } else if (normalized < 12) {
+            return String.format("AM %d:00", normalized);
+        } else if (normalized == 12) {
             return "PM 12:00";
         } else {
-            return String.format("PM %d:00", hour - 12);
+            return String.format("PM %d:00", normalized - 12);
         }
     }
 
