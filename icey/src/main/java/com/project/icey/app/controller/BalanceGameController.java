@@ -46,11 +46,13 @@ public class BalanceGameController {
         BalanceGame game = balanceGameService.createBalanceGame(teamId);
         BalanceGameDto dto = BalanceGameDto.from(game);
 
+        String teamName = game.getTeam().getTeamName();
+
         Long userId = userDetails.getUser().getId();
         notificationService.sendNotification(
                 userId,
                 NotificationType.BALANCE_GAME_CREATED,
-                "새로운 밸런스 게임이 생성되었습니다!"
+                teamName
         );
 
         return ApiResponseTemplete.success(SuccessCode.CREATE_POST_SUCCESS, dto);

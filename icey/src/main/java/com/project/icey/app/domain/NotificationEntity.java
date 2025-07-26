@@ -23,7 +23,7 @@ public class NotificationEntity {
     @Enumerated(EnumType.STRING)
     private NotificationType type;
 
-    private String content;
+    private String teamName;
 
     @Column(name = "is_read")
     private boolean read;  // 읽음 여부
