@@ -17,17 +17,17 @@ public class NotificationService {
     private final SseEmitterService sseEmitterService;
 
     // 알림 저장
-    public void sendNotification(Long userId, NotificationType type, String content) {
+    public void sendNotification(Long userId, NotificationType type, String teamName) {
         // DB 저장
         NotificationEntity notification = NotificationEntity.builder()
                 .userId(userId)
                 .type(type)
-                .content(content)
+                .teamName(teamName)
                 .build();
         notificationRepository.save(notification);
 
         // 실시간 전송 (SSE)
-        sseEmitterService.broadcast(userId, new Notification(type, content));
+        sseEmitterService.broadcast(userId, new Notification(type, teamName));
     }
 
     // 읽지 않은 알림 조회
