@@ -18,7 +18,9 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
@@ -65,9 +67,12 @@ public class TeamController {
     public ResponseEntity<?> joinTeam(@AuthenticationPrincipal CustomUserDetails userDetails,
                                                       @PathVariable String invitationToken){
         User user = userDetails.getUser();
-        teamService.joinTeamByInvitation(user, invitationToken);
+        Long teamId = teamService.joinTeamByInvitation(user, invitationToken);
 
-        return ApiResponseTemplete.success(SuccessCode.JOIN_TEAM_SUCCESS, null);
+        Map<String, Object> responseData = new HashMap<>();
+        responseData.put("teamId", teamId);
+
+        return ApiResponseTemplete.success(SuccessCode.JOIN_TEAM_SUCCESS, responseData);
     }
     //초대링크를 통한 초대장(팀 정보) 조회
     @GetMapping("/invitation/{invitationToken}")

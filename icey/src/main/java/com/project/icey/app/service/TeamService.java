@@ -106,7 +106,7 @@ public class TeamService {
         );
     }
 
-    public void joinTeamByInvitation(User user, String invitationToken) {
+    public Long joinTeamByInvitation(User user, String invitationToken) {
         Team team = teamRepository.findByInvitation(invitationToken)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "유효하지 않은 초대 링크입니다."));
         int memberCnt = userteamRepository.countByTeam(team);
@@ -129,7 +129,7 @@ public class TeamService {
         //팀에 가입됨과 동시에 명함 연결
         cardService.ensureMyCard(team.getTeamId(), user);
 
-
+        return team.getTeamId();
     }
 
     @Transactional(readOnly = true)
