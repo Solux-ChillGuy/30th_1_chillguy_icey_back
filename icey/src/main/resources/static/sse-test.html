@@ -71,7 +71,7 @@
             } else {
                 data.forEach(notification => {
                     const p = document.createElement('p');
-                    p.textContent = `[${notification.type}] ${notification.content}`;
+                    p.textContent = `[${notification.type}] ${notification.teamName}`;
                     messages.appendChild(p);
                 });
             }
