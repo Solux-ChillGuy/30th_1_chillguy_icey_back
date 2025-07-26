@@ -2,7 +2,6 @@ package com.project.icey.app.domain;
 
 public enum NotificationType {
     LETTER,             // 쪽지 알림
-    TEAM_EXPIRATION,     // 팀 유효기간 알림
     TEAM_EXPIRATION_1,  // 팀 유효기간 1일 전
     TEAM_EXPIRATION_3,  // 팀 유효기간 3일 전
     APPOINTMENT_CREATED, // 약속 잡기 생성 알림

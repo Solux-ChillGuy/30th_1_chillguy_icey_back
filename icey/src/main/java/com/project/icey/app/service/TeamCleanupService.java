@@ -50,11 +50,11 @@ public class TeamCleanupService {
             long daysLeft = ChronoUnit.DAYS.between(now, team.getExpiration().toLocalDate());
 
             if (daysLeft == 3 || daysLeft == 1) {
-                String message;
+                NotificationType notificationType = null;
                 if (daysLeft == 3) {
-                    message = "[" + team.getTeamName() + "] 팀 페이지 삭제까지 3일 남았어요!";
+                    notificationType = NotificationType.TEAM_EXPIRATION_3;
                 } else {
-                    message = "[" + team.getTeamName() + "] 팀 페이지 삭제까지 하루 남았어요!";
+                    notificationType = NotificationType.TEAM_EXPIRATION_1;
                 }
 
                 // 팀 멤버들 가져오기
@@ -64,8 +64,8 @@ public class TeamCleanupService {
                 for (UserTeamManager member : members) {
                     notificationService.sendNotification(
                             member.getUser().getId(),
-                            NotificationType.TEAM_EXPIRATION,
-                            message
+                            notificationType,
+                            team.getTeamName()
                     );
                 }
             }
