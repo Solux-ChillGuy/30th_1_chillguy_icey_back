@@ -49,7 +49,7 @@ public class NotificationController {
         User user = userDetails.getUser();
         Long userId = user.getId();
         // sseEmitterService.broadcast(userId, notification);
-        notificationService.sendNotification(userId, notification.getType(), notification.getContent());
+        notificationService.sendNotification(userId, notification.getType(), notification.getTeamName());
     }
 
     @GetMapping("/unread")
