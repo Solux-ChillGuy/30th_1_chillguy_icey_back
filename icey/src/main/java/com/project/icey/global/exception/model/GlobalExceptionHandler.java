@@ -2,6 +2,7 @@ package com.project.icey.global.exception.model;
 
 
 import com.project.icey.global.dto.ApiResponseTemplete;
+import com.project.icey.global.exception.AlreadyJoinedException;
 import com.project.icey.global.exception.ErrorCode;
 import com.project.icey.global.exception.InvalidTokenException;
 import org.springframework.http.HttpStatus;
@@ -11,6 +12,9 @@ import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.server.ResponseStatusException;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
@@ -73,6 +77,17 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(InvalidTokenException.class)
     public ResponseEntity<ApiResponseTemplete<String>> handleInvalidTokenException(InvalidTokenException e) {
         return ApiResponseTemplete.error(ErrorCode.UNAUTHORIZED_EXCEPTION, e.getMessage());
+    }
+
+    @ExceptionHandler(AlreadyJoinedException.class)
+    public ResponseEntity<Map<String, Object>> handleAlreadyJoined(AlreadyJoinedException e) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("status", HttpStatus.CONFLICT.value());
+        body.put("success", false);
+        body.put("message", e.getMessage());
+        // teamId를 같이 넣기
+        body.put("teamId", e.getTeamId());
+        return new ResponseEntity<>(body, HttpStatus.CONFLICT);
     }
 
 
