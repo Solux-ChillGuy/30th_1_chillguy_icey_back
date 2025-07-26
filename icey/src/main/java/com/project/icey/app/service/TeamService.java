@@ -29,6 +29,8 @@ public class TeamService {
     private final CardRepository cardRepository;
     private final ScheduleRepository scheduleRepository;
     private final CardService cardService;
+    private final ScheduleVoteRepository scheduleVoteRepository;
+
 
     @Value("${app.frontEndBaseUrl}")
     private String baseUrl;
@@ -155,9 +157,16 @@ public class TeamService {
         //정해진 약속잡기가 있는지 조회
         boolean hasSchedule = scheduleRepository.existsByTeam_TeamId(teamId);
         String confirmedDate = null;
+        boolean isAllVoted = false;
         if (hasSchedule) {
             Schedule schedule = scheduleRepository.findByTeam_TeamId(teamId)
                     .orElse(null);
+
+            // 팀 전체가 투표했는지 계산
+            Long votedCount = scheduleVoteRepository.countDistinctVotersByScheduleId(schedule.getScheduleId());
+            int totalMembers = team.getMembers().size();
+            isAllVoted = (votedCount != null && votedCount == totalMembers);
+
             if (schedule != null && schedule.isConfirmed() && schedule.getConfirmedDate() != null) {
                 confirmedDate = schedule.getConfirmedDate().toString();
             }
@@ -173,7 +182,8 @@ public class TeamService {
                 role.name(),
                 hasSchedule,
                 confirmedDate,
-                team.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+                team.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")),
+                isAllVoted
         );
 
     }
