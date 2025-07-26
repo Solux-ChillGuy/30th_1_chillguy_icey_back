@@ -71,7 +71,7 @@ public class ScheduleService {
                 scheduleTimeSlotRepository.save(timeSlot);
             }
         }
-        String message = String.format("[%s]로부터 약속잡기가 생성되었습니다.", schedule.getTeam().getTeamName());
+        //String message = String.format("[%s]로부터 약속잡기가 생성되었습니다.", schedule.getTeam().getTeamName());
 
         List<UserTeamManager> members = team.getMembers();
         for (UserTeamManager member : members) {
@@ -80,7 +80,7 @@ public class ScheduleService {
                 notificationService.sendNotification(
                         member.getUser().getId(),
                         NotificationType.APPOINTMENT_CREATED,
-                        message
+                        team.getTeamName()
                 );
             }
         }
@@ -135,14 +135,14 @@ public class ScheduleService {
                     .findFirst()
                     .orElse(null);
 
-            String message = String.format("[%s]의 팀원 모두가 가능한 시간대를 등록했습니다. 약속을 확정해보세요!", schedule.getTeam().getTeamName());
+            //String message = String.format("[%s]의 팀원 모두가 가능한 시간대를 등록했습니다. 약속을 확정해보세요!", schedule.getTeam().getTeamName());
 
 
             if (leader != null) {
                 notificationService.sendNotification(
                         leader.getUser().getId(),
                         NotificationType.APPOINTMENT_COMPLETED,
-                        message
+                        schedule.getTeam().getTeamName()
                 );
             }
         }
@@ -312,7 +312,7 @@ public class ScheduleService {
         scheduleRepository.save(schedule);
 
         //팀원에게 알림 보내기
-        String message = String.format("[%s]로부터 약속잡기가 확정되었습니다. 약속시간을 확인해보세요.", team.getTeamName());
+        //String message = String.format("[%s]로부터 약속잡기가 확정되었습니다. 약속시간을 확인해보세요.", team.getTeamName());
 
         List<UserTeamManager> members = team.getMembers();
         for (UserTeamManager member : members) {
@@ -320,8 +320,8 @@ public class ScheduleService {
             if (!memberUserId.equals(userId)) {
                 notificationService.sendNotification(
                         member.getUser().getId(),
-                        NotificationType.APPOINTMENT_COMPLETED,
-                        message
+                        NotificationType.APPOINTMENT_REGISTRATION_COMPLETED,
+                        team.getTeamName()
                 );
             }
         }
