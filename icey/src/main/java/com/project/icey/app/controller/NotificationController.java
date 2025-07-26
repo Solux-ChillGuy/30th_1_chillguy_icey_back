@@ -30,7 +30,7 @@ public class NotificationController {
     private final TokenService tokenService;
     private final EmitterRepository emitterRepository;
 
-    @GetMapping(value = "/subscribe", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    @GetMapping(value = "/subscribe", produces = "text/event-stream;charset=UTF-8")
     public SseEmitter subscribe(@RequestParam String token) {
         if (!tokenService.validateToken(token)) {
             throw new InvalidTokenException("유효하지 않은 토큰입니다.");
