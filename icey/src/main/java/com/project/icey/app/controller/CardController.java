@@ -3,6 +3,7 @@ package com.project.icey.app.controller;
 import com.project.icey.app.dto.CardRequest;
 import com.project.icey.app.dto.CardResponse;
 import com.project.icey.app.dto.CustomUserDetails;
+import com.project.icey.app.dto.SimpleTeamInfo;
 import com.project.icey.app.service.CardService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -48,11 +49,13 @@ public class CardController {
         cardService.delete(id, principal.getUser().getId());
     }
 
-    /* 템플릿별 사용중인 팀 id 리스트 조회 API */
+    /*이 템플릿을 사용하는 팀 목록 조회*/
     @GetMapping("/{templateId}/used-teams")
-    public List<Long> getUsedTeamIds(@PathVariable Long templateId) {
-        return cardService.getTeamIdsUsingTemplate(templateId);
+    public List<SimpleTeamInfo> getUsedTeamInfos(@PathVariable Long templateId) {
+        return cardService.getTeamInfosUsingTemplate(templateId);
     }
+
+
 
 
 
@@ -78,4 +81,14 @@ public class CardController {
                                      @AuthenticationPrincipal CustomUserDetails principal) {
         return cardService.applyTemplate(teamId, templateId, principal.getUser());
     }
+
+    // 내 팀카드(내가 이 팀에서 쓰는 카드)만 반환하는 API
+    @GetMapping("/teams/{teamId}/cards/my")
+    public CardResponse getMyTeamCard(
+            @PathVariable Long teamId,
+            @AuthenticationPrincipal CustomUserDetails principal
+    ) {
+        return cardService.getMyTeamCard(teamId, principal.getUser().getId());
+    }
+
 }

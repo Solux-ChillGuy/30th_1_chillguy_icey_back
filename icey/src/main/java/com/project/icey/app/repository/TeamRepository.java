@@ -20,4 +20,8 @@ public interface TeamRepository extends JpaRepository<Team, Long> {
     @Query("SELECT t FROM Team t JOIN FETCH t.members m JOIN FETCH m.user WHERE t.teamId = :teamId")
     Optional<Team> findByIdWithMembersAndUsers(@Param("teamId") Long teamId);
 
+    // 여러 팀 id로 한 번에 여러 팀 찾아오기
+    List<Team> findByTeamIdIn(List<Long> teamIds);
+
+
 }

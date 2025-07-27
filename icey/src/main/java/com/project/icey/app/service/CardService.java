@@ -5,6 +5,7 @@ import com.project.icey.app.domain.Team;
 import com.project.icey.app.domain.User;
 import com.project.icey.app.dto.CardRequest;
 import com.project.icey.app.dto.CardResponse;
+import com.project.icey.app.dto.SimpleTeamInfo;
 import com.project.icey.app.repository.CardRepository;
 import com.project.icey.app.repository.TeamRepository;
 import com.project.icey.global.exception.ErrorCode;
@@ -28,8 +29,8 @@ public class CardService {
     // 색상 팔레트
     //7.22 번호별로 바꾸기(색깔이 아니라)
     private static final List<String> COLORS = List.of(
-            "빨강", "파랑", "초록", "노랑", "주황",
-            "보라", "분홍", "회색", "검정", "하양"
+            "빨강", "주황", "노랑", "초록",
+            "파랑","남색","보라", "회색", "검정", "하양"
     );
     private static final Random RANDOM = new Random();
 
@@ -79,16 +80,22 @@ public class CardService {
         cardRepo.delete(tpl);
     }
 
-    /* 이 템플릿이 사용된 팀 id 리스트 반환 */
-    public List<Long> getTeamIdsUsingTemplate(Long tplId) {
-        return cardRepo.findByOriginId(tplId)
+    public List<SimpleTeamInfo> getTeamInfosUsingTemplate(Long tplId) {
+        List<Long> teamIds = cardRepo.findByOriginId(tplId)
                 .stream()
                 .filter(card -> card.getTeam() != null)
                 .map(card -> card.getTeam().getTeamId())
                 .distinct()
                 .toList();
+        // 팀 id 리스트로 팀 엔티티 전체 조회
+        List<Team> teams = teamRepo.findByTeamIdIn(teamIds);
 
+        // DTO로 변환
+        return teams.stream()
+                .map(team -> new SimpleTeamInfo(team.getTeamId(), team.getTeamName()))
+                .toList();
     }
+
 
 
 
@@ -154,6 +161,15 @@ public class CardService {
         clone.setProfileColor(pickAvailableColor(teamId));
         return toDto(cardRepo.save(clone));
     }
+
+    // [내 팀 명함 조회]
+    @Transactional(readOnly = true)
+    public CardResponse getMyTeamCard(Long teamId, Long userId) {
+        Card card = cardRepo.findByTeam_TeamIdAndUserId(teamId, userId)
+                .orElseThrow(() -> new CoreApiException(ErrorCode.CARD_NOT_FOUND));
+        return toDto(card);
+    }
+
 
     // 내부 유틸/보조 메서드
 
