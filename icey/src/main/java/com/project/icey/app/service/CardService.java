@@ -258,8 +258,8 @@ public class CardService {
                 c.getAnimal(),
                 c.getProfileColor(),
                 c.getAccessory(),
-                c.getHobby(),
                 c.getMbti(),
+                c.getHobby(),
                 c.getSecretTip(),
                 c.getTmi()
         );
