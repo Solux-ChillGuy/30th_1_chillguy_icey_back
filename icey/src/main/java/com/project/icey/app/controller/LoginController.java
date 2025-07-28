@@ -115,15 +115,16 @@ public class LoginController {
 
 
     @PostMapping("/refresh")
-    public ResponseEntity<?> refreshAccessToken(HttpServletRequest request, HttpServletResponse response) {
-        // 1. 리프레시 토큰 추출
-        Optional<String> optionalRefreshToken = tokenService.extractRefreshToken(request);
+    public ResponseEntity<?> refreshAccessToken(
+            @RequestHeader("Refresh") String refreshHeader, // Swagger에서 입력 가능
+            HttpServletResponse response) {
 
-        if (optionalRefreshToken.isEmpty()) {
-            throw new CustomException(ErrorCode.INVALID_TOKEN_EXCEPTION, "리프레시 토큰이 없습니다.");
+        // 1. "Bearer " 제거
+        if (!refreshHeader.startsWith("Bearer ")) {
+            throw new CustomException(ErrorCode.INVALID_TOKEN_EXCEPTION, "Bearer 타입의 토큰이 아닙니다.");
         }
 
-        String refreshToken = optionalRefreshToken.get();
+        String refreshToken = refreshHeader.substring(7); // "Bearer " 제거
 
         // 2. 리프레시 토큰 유효성 검사
         if (!tokenService.validateToken(refreshToken)) {
@@ -150,4 +151,5 @@ public class LoginController {
 
         return ResponseEntity.ok().body(Map.of("accessToken", newAccessToken));
     }
+
 }
