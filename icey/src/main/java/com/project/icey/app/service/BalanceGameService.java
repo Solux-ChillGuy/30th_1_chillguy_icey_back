@@ -134,7 +134,8 @@ public class BalanceGameService {
                 option1Count,
                 game.getOption2(),
                 option2Count,
-                total
+                total,
+                game.getCreatedAt()
         );
     }
 
@@ -163,7 +164,8 @@ public class BalanceGameService {
                             option1Count,
                             game.getOption2(),
                             option2Count,
-                            option1Count + option2Count
+                            option1Count + option2Count,
+                            game.getCreatedAt()
                     );
                 })
                 .collect(Collectors.toList());

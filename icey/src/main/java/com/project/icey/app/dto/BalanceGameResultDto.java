@@ -5,6 +5,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
+
 @Getter
 @Setter
 @AllArgsConstructor
@@ -16,4 +18,5 @@ public class BalanceGameResultDto {
     private String option2;
     private long option2Count;
     private long totalVotes;
+    private LocalDateTime createdAt;
 }
