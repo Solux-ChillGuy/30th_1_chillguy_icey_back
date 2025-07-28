@@ -86,7 +86,7 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
 
         // 토큰 발급 및 저장
         String accessToken = tokenService.createAccessToken(user.getEmail());
-        String refreshToken = tokenService.createRefreshToken();
+        String refreshToken = tokenService.createRefreshToken(user.getEmail());
         user.setRefreshToken(refreshToken);
         userRepository.save(user);
 
