@@ -110,7 +110,7 @@ public class BalanceGameService {
 
     // 투표 결과 조회
     @Transactional(readOnly = true)
-    public BalanceGameResultDto getResult(Long gameId) {
+    public BalanceGameResultDto getResult(Long gameId, User user) {
         BalanceGame game = balanceGameRepository.findById(gameId)
                 .orElseThrow(() -> new CoreApiException(ErrorCode.RESOURCE_NOT_FOUND));
 
@@ -128,6 +128,9 @@ public class BalanceGameService {
 
         long total = option1Count + option2Count;
 
+        BalanceGameVote vote = balanceGameVoteRepository.findByBalanceGameIdAndUserId(gameId, user.getId()).orElse(null);
+        Integer userSelectedOption = vote != null ? vote.getSelectedOption() : null;
+
         return new BalanceGameResultDto(
                 gameId,
                 game.getOption1(),
@@ -135,7 +138,8 @@ public class BalanceGameService {
                 game.getOption2(),
                 option2Count,
                 total,
-                game.getCreatedAt()
+                game.getCreatedAt(),
+                userSelectedOption
         );
     }
 
@@ -150,13 +154,19 @@ public class BalanceGameService {
         balanceGameRepository.delete(game);
     }
 
-    public List<BalanceGameResultDto> getAllGameResultsByTeam(Long teamId) {
+    public List<BalanceGameResultDto> getAllGameResultsByTeam(Long teamId, User user) {
         List<BalanceGame> games = balanceGameRepository.findByTeam_TeamId(teamId);
 
         return games.stream()
                 .map(game -> {
                     long option1Count = balanceGameVoteRepository.countByBalanceGameIdAndSelectedOption(game.getId(), 1);
                     long option2Count = balanceGameVoteRepository.countByBalanceGameIdAndSelectedOption(game.getId(), 2);
+
+                    BalanceGameVote vote = balanceGameVoteRepository
+                            .findByBalanceGameIdAndUserId(game.getId(), user.getId())
+                            .orElse(null);
+
+                    Integer userSelectedOption = vote != null ? vote.getSelectedOption() : null;
 
                     return new BalanceGameResultDto(
                             game.getId(),
@@ -165,7 +175,8 @@ public class BalanceGameService {
                             game.getOption2(),
                             option2Count,
                             option1Count + option2Count,
-                            game.getCreatedAt()
+                            game.getCreatedAt(),
+                            userSelectedOption
                     );
                 })
                 .collect(Collectors.toList());

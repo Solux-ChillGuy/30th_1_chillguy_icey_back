@@ -21,4 +21,5 @@ public interface BalanceGameVoteRepository extends JpaRepository<BalanceGameVote
 
     long countByBalanceGameIdAndSelectedOption(Long balanceGameId, int selectedOption);
 
+
 }
