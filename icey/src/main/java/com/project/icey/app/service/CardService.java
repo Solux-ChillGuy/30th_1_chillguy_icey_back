@@ -250,13 +250,15 @@ public class CardService {
 
     private CardResponse toDto(Card c) {
         Long tplId = (c.getOrigin() != null) ? c.getOrigin().getId() : c.getId();
+        // profileColor가 null이면 기본값("하양")으로 반환한다!!!
+        String profileColor = c.getProfileColor() != null ? c.getProfileColor() : "하양";
         return new CardResponse(
                 c.getId(),             // cardId
                 tplId,                 // templateId
                 c.getUser().getId(),   // userId
                 c.getNickname(),
                 c.getAnimal(),
-                c.getProfileColor(),
+                profileColor,
                 c.getAccessory(),
                 c.getMbti(),
                 c.getHobby(),
