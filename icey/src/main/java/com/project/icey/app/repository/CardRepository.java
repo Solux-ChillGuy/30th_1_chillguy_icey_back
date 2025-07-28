@@ -24,6 +24,10 @@ public interface CardRepository extends JpaRepository<Card, Long> {
     //이 템플릿을 쓰는 팀카드가 하나라도 있는지?
     boolean existsByOriginId(Long originId);
 
+    // originId(템플릿 id)와 userId(내 id)로만 필터링!
+    List<Card> findByOriginIdAndUserId(Long originId, Long userId);
+
+
     Optional<Card> findByUserAndTeam(User user, Team team);
 }
 

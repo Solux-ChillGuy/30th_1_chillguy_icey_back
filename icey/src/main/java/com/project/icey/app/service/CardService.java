@@ -80,21 +80,24 @@ public class CardService {
         cardRepo.delete(tpl);
     }
 
-    public List<SimpleTeamInfo> getTeamInfosUsingTemplate(Long tplId) {
-        List<Long> teamIds = cardRepo.findByOriginId(tplId)
-                .stream()
+    public List<SimpleTeamInfo> getMyTeamInfosUsingTemplate(Long tplId, Long userId) {
+        // 1)나의 팀카드들 중에서
+        List<Card> myCards = cardRepo.findByOriginIdAndUserId(tplId, userId);
+
+        // 2) 팀 정보만 모아서 반환
+        List<Long> teamIds = myCards.stream()
                 .filter(card -> card.getTeam() != null)
                 .map(card -> card.getTeam().getTeamId())
                 .distinct()
                 .toList();
-        // 팀 id 리스트로 팀 엔티티 전체 조회
+
         List<Team> teams = teamRepo.findByTeamIdIn(teamIds);
 
-        // DTO로 변환
         return teams.stream()
                 .map(team -> new SimpleTeamInfo(team.getTeamId(), team.getTeamName()))
                 .toList();
     }
+
 
 
 
