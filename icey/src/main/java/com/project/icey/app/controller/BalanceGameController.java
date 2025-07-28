@@ -30,9 +30,10 @@ public class BalanceGameController {
     // 전체 조회
     @GetMapping
     public ResponseEntity<ApiResponseTemplete<List<BalanceGameResultDto>>> getAllBalanceGames(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
             @PathVariable Long teamId
     ) {
-        List<BalanceGameResultDto> results = balanceGameService.getAllGameResultsByTeam(teamId);
+        List<BalanceGameResultDto> results = balanceGameService.getAllGameResultsByTeam(teamId, userDetails.getUser());
         return ApiResponseTemplete.success(SuccessCode.GET_POST_SUCCESS, results);
     }
 
@@ -77,10 +78,11 @@ public class BalanceGameController {
     // 결과 조회
     @GetMapping("/{gameId}/result")
     public ResponseEntity<ApiResponseTemplete<BalanceGameResultDto>> getResult(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
             @PathVariable Long teamId,
             @PathVariable Long gameId
     ) {
-        BalanceGameResultDto result = balanceGameService.getResult(gameId);
+        BalanceGameResultDto result = balanceGameService.getResult(gameId, userDetails.getUser());
         return ApiResponseTemplete.success(SuccessCode.GET_POST_SUCCESS, result);
     }
 

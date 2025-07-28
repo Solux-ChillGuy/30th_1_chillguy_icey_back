@@ -19,4 +19,5 @@ public class BalanceGameResultDto {
     private long option2Count;
     private long totalVotes;
     private LocalDateTime createdAt;
+    private Integer userSelectedOption;
 }
