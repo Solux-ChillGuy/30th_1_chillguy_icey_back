@@ -5,6 +5,7 @@ import com.project.icey.app.dto.LoginRequestDto;
 import com.project.icey.app.repository.UserRepository;
 import com.project.icey.global.dto.ApiResponseTemplete;
 import com.project.icey.global.exception.*;
+import com.project.icey.global.exception.model.CustomException;
 import com.project.icey.global.security.TokenService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -111,4 +112,44 @@ public class LoginController {
         // 성공적인 응답 반환
         return ApiResponseTemplete.success(SuccessCode.LOGIN_USER_SUCCESS, responseData);
     }
+
+
+    @PostMapping("/refresh")
+    public ResponseEntity<?> refreshAccessToken(
+            @RequestHeader("Refresh") String refreshHeader, // Swagger에서 입력 가능
+            HttpServletResponse response) {
+
+        // 1. "Bearer " 제거
+        if (!refreshHeader.startsWith("Bearer ")) {
+            throw new CustomException(ErrorCode.INVALID_TOKEN_EXCEPTION, "Bearer 타입의 토큰이 아닙니다.");
+        }
+
+        String refreshToken = refreshHeader.substring(7); // "Bearer " 제거
+
+        // 2. 리프레시 토큰 유효성 검사
+        if (!tokenService.validateToken(refreshToken)) {
+            throw new CustomException(ErrorCode.INVALID_TOKEN_EXCEPTION, "유효하지 않은 리프레시 토큰입니다.");
+        }
+
+        // 3. 이메일 추출
+        String email = tokenService.extractEmail(refreshToken)
+                .orElseThrow(() -> new CustomException(ErrorCode.INVALID_TOKEN_EXCEPTION, "이메일을 추출할 수 없습니다."));
+
+        // 4. DB에 저장된 리프레시 토큰과 일치하는지 확인
+        User user = tokenService.getUserRepository().findByEmail(email)
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_USER_EXCEPTION, "사용자를 찾을 수 없습니다."));
+
+        if (!refreshToken.equals(user.getRefreshToken())) {
+            throw new CustomException(ErrorCode.INVALID_TOKEN_EXCEPTION, "저장된 리프레시 토큰과 일치하지 않습니다.");
+        }
+
+        // 5. 새 액세스 토큰 발급
+        String newAccessToken = tokenService.createAccessToken(email);
+
+        // 6. 새 토큰 응답
+        tokenService.sendAccessToken(response, newAccessToken);
+
+        return ResponseEntity.ok().body(Map.of("accessToken", newAccessToken));
+    }
+
 }

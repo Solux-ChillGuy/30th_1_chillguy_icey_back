@@ -93,6 +93,7 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
         // ✅ 프론트 리다이렉트 URL 조립
         String targetUrl = UriComponentsBuilder.fromUriString(redirectUri)
                 .queryParam("accessToken", accessToken)
+                .queryParam("refreshToken", refreshToken)
                 .build().toUriString();
         response.sendRedirect(targetUrl);
     }
