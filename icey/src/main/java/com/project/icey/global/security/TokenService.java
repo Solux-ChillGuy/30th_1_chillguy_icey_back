@@ -83,12 +83,13 @@ public class TokenService {
     /**
      * Refresh Token 생성
      */
-    public String createRefreshToken() {
+    public String createRefreshToken(String email) {
         Date expirationTime = new Date(System.currentTimeMillis() + refreshTokenValidityTime);
 
         return Jwts.builder()
                 .subject(REFRESH_TOKEN_SUBJECT)
                 .issuedAt(new Date())
+                .claim("email", email)
                 .expiration(expirationTime)
                 .signWith(key)
                 .compact();
