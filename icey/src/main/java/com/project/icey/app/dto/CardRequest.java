@@ -21,7 +21,7 @@ public class CardRequest {
     @NotBlank
     private String accessory;
     //프로필 색은 null 가능
-    private String profileColor;
+    // 리퀘스트에서 제거하고 백에서만 관리해보기>private String profileColor;
 
 
 }
