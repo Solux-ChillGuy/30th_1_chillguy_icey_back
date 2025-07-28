@@ -150,6 +150,7 @@ public class MemoService {
                 })
                 .toList();
 
+        boolean mine = (author.getId().equals(viewerId));  // 내가 쓴 메모면 true
 
         return new MemoResponse(
                 m.getId(),
@@ -159,7 +160,8 @@ public class MemoService {
                 liked,
                 likeCnt,
                 likeUsers,
-                m.getCreatedAt()
+                m.getCreatedAt(),
+                mine
         );
     }
 }
