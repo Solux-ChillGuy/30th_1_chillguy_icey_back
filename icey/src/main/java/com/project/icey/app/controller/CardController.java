@@ -51,9 +51,16 @@ public class CardController {
 
     /*이 템플릿을 사용하는 팀 목록 조회*/
     @GetMapping("/{templateId}/used-teams")
-    public List<SimpleTeamInfo> getUsedTeamInfos(@PathVariable Long templateId) {
-        return cardService.getTeamInfosUsingTemplate(templateId);
+    public List<SimpleTeamInfo> getUsedTeamIds(
+            @PathVariable Long templateId,
+            @AuthenticationPrincipal CustomUserDetails principal  // 로그인 유저 참고
+    ) {
+        Long userId = principal.getUser().getId();
+        return cardService.getMyTeamInfosUsingTemplate(templateId, userId);
     }
+
+
+
 
 
 
