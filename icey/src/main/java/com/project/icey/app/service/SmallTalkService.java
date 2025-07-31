@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -33,16 +34,27 @@ public class SmallTalkService {
     public SmallTalkListDto previewSmallTalkList(User user, String target, String purpose) {
         SmallTalkResponse resDto = smallTalkGeneratorService.generateSmallTalkWithTitle(target, purpose);
 
+        List<SmallTalkDto> allDtos = resDto.getQuestionTips().stream()
+                .map(q -> new SmallTalkDto(null, q.getQuestion(), q.getTip(), null, QuestionType.AI, false)) // ✅ show 포함
+                .collect(Collectors.toList());
+
+// 랜덤으로 5개는 show=true, 나머지는 false
+        Collections.shuffle(allDtos);
+        for (int i = 0; i < allDtos.size(); i++) {
+            allDtos.get(i).setShow(i < 5);
+        }
+
+
         return new SmallTalkListDto(
                 null,
                 target,
                 purpose,
                 resDto.getTitle(),
-                resDto.getQuestionTips().stream()
-                        .map(q -> new SmallTalkDto(null, q.getQuestion(), q.getTip(), null, QuestionType.AI))
-                        .toList()
+                allDtos
         );
     }
+
+
 
     // 사용자가 "저장" 눌렀을 때 실제 저장
     public SmallTalkList saveSmallTalkList(SmallTalkListSaveRequest request, User user) {
@@ -59,6 +71,7 @@ public class SmallTalkService {
             st.setQuestion(dto.getQuestion());
             st.setTip(dto.getTip());
             st.setAnswer(dto.getAnswer());
+            st.setShow(dto.isShow());
 
             // ✅ questionType 자동 매핑
             if (dto.getQuestionType() != null) {
@@ -107,6 +120,7 @@ public class SmallTalkService {
                 newTalk.setAnswer(item.getAnswer());
                 newTalk.setTip(null); // 사용자 추가 질문이므로 tip 없음
                 newTalk.setQuestionType(QuestionType.SELF);
+                newTalk.setShow(item.isShow());
                 newTalk.setSmallTalkList(list);
                 list.getSmallTalks().add(newTalk);
             } else {
@@ -120,6 +134,7 @@ public class SmallTalkService {
 
                 // 답변은 항상 수정 가능
                 existing.setAnswer(item.getAnswer());
+                existing.setShow(item.isShow());
             }
         }
         listRepository.save(list);
@@ -203,6 +218,7 @@ public class SmallTalkService {
             d.setTip(st.getTip());
             d.setAnswer(st.getAnswer());
             d.setQuestionType(st.getQuestionType());
+            d.setShow(st.isShow());
             return d;
         }).collect(Collectors.toList()));
         return dto;
