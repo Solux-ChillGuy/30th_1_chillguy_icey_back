@@ -2,22 +2,29 @@ package com.project.icey.app.controller;
 
 import com.project.icey.app.domain.User;
 import com.project.icey.app.dto.LoginRequestDto;
+import com.project.icey.app.dto.UserInfoResponse;
 import com.project.icey.app.repository.UserRepository;
 import com.project.icey.global.dto.ApiResponseTemplete;
 import com.project.icey.global.exception.*;
+import com.project.icey.global.exception.model.CoreApiException;
 import com.project.icey.global.exception.model.CustomException;
+import com.project.icey.global.exception.model.ResourceNotFoundException;
 import com.project.icey.global.security.TokenService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.view.RedirectView;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;import java.util.Optional;
+
 
 @RestController
 @RequestMapping("/api")
@@ -151,5 +158,32 @@ public class LoginController {
 
         return ResponseEntity.ok().body(Map.of("accessToken", newAccessToken));
     }
+/*
+    @GetMapping("/user-info")
+    public ResponseEntity<UserInfoResponse> getCurrentUser(@RequestHeader("Authorization") String authHeader) {
+        // 1. 토큰에서 유저 ID 추출
+        String token = authHeader.replace("Bearer ", "");
+        Long userId = tokenService.extractUserId(token)
+                .orElseThrow(() -> new InvalidTokenException("토큰에서 사용자 ID를 찾을 수 없습니다."));
+
+        // 2. 사용자 조회
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        ErrorCode.RESOURCE_NOT_FOUND,
+                        List.of("User id: " + userId)
+                ));
+
+        // 3. 응답 DTO로 리턴
+        return ResponseEntity.ok(new UserInfoResponse(user.getEmail(), user.getUserName(), user.getProvider()));
+    }
+*/
+@GetMapping("/user-info")
+public ResponseEntity<UserInfoResponse> getCurrentUser(@AuthenticationPrincipal UserDetails userDetails) {
+    String email = userDetails.getUsername();
+    User user = userRepository.findByEmail(email)
+            .orElseThrow(() -> new ResourceNotFoundException(ErrorCode.RESOURCE_NOT_FOUND, List.of("User email: " + email)));
+
+    return ResponseEntity.ok(new UserInfoResponse(user.getEmail(), user.getUserName(), user.getProvider()));
+}
 
 }

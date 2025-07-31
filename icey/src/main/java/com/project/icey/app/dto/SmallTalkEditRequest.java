@@ -2,9 +2,13 @@ package com.project.icey.app.dto;
 
 import com.project.icey.app.domain.QuestionType;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.List;
 
+@Getter
+@Setter
 @Data
 public class SmallTalkEditRequest {
 
@@ -17,5 +21,6 @@ public class SmallTalkEditRequest {
         private String tip;           // 무시 or null
         private String answer;        // 수정된 답변
         private QuestionType questionType;
+        private boolean show;
     }
 }

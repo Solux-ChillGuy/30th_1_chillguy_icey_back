@@ -24,6 +24,9 @@ public class SmallTalk {
 
     private QuestionType questionType;
 
+    @Column(name = "is_show", nullable = false)
+    private boolean show;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "small_talk_list_id")
     private SmallTalkList smallTalkList;

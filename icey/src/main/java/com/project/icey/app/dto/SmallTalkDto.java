@@ -12,15 +12,17 @@ public class SmallTalkDto {
     private String tip;
     private String answer;
     private QuestionType questionType;
+    private boolean show;
 
     public SmallTalkDto(){}
 
-    public SmallTalkDto(Long id, String question, String tip, String answer, QuestionType questionType) {
+    public SmallTalkDto(Long id, String question, String tip, String answer, QuestionType questionType, boolean show) {
         this.id = id;
         this.question = question;
         this.tip = tip;
         this.answer = answer;
         this.questionType = questionType;
+        this.show = show;
     }
 
 
