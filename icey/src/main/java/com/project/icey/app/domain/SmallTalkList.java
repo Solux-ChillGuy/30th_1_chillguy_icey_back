@@ -34,12 +34,21 @@ public class SmallTalkList {
         if (createdAt == null) {
             createdAt = LocalDateTime.now();
         }
+        if (change_time == null) {
+            change_time = 0;
+        }
     }
 
     private String target;   // 스몰톡 대상
     private String purpose;  // 스몰톡 목적
     private String title;    // 리스트 제목
 
+    @Column(nullable = false, name = "change_time")
+    private Integer change_time = 0;
+
     @OneToMany(mappedBy = "smallTalkList", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<SmallTalk> smallTalks = new ArrayList<>();
+
+
+
 }
