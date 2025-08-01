@@ -111,4 +111,15 @@ public class SmallTalkController {
         smallTalkService.editSmallTalks(listId, request.getEdits(), user);
         return ApiResponseTemplete.success(SuccessCode.UPDATE_POST_SUCCESS, null);
     }
+
+    @PostMapping("/talk/{talkId}/swap")
+    public ResponseEntity<ApiResponseTemplete<SwapResponse>> swapShow(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @PathVariable Long talkId
+    ) {
+        User user = userDetails.getUser();
+        SwapResponse result = smallTalkService.swapShow(talkId, user);
+        return ApiResponseTemplete.success(SuccessCode.UPDATE_POST_SUCCESS, result);
+    }
+
 }

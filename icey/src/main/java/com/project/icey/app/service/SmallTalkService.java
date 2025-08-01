@@ -227,4 +227,28 @@ public class SmallTalkService {
         }).collect(Collectors.toList()));
         return dto;
     }
+
+    @Transactional
+    public SwapResponse swapShow(Long talkId, User user) {
+        SmallTalk current = smallTalkRepository.findById(talkId)
+                .orElseThrow(() -> new CoreApiException(ErrorCode.RESOURCE_NOT_FOUND));
+
+        if (!current.isShow()) {
+            throw new CoreApiException(ErrorCode.INVALID_REQUEST);
+        }
+
+        SmallTalkList list = current.getSmallTalkList();
+        validateOwner(list.getUser(), user);
+
+        SmallTalk replacement = list.getSmallTalks().stream()
+                .filter(t -> !t.getId().equals(current.getId()) && !t.isShow())
+                .findFirst()
+                .orElseThrow(() -> new CoreApiException(ErrorCode.RESOURCE_NOT_FOUND));
+
+        current.setShow(false);
+        replacement.setShow(true);
+
+        return new SwapResponse(current.getId(), replacement.getId());
+    }
+
 }
