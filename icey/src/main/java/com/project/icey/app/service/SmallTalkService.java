@@ -129,12 +129,14 @@ public class SmallTalkService {
             } else {
                 SmallTalk existing = talkMap.get(item.getId());
                 if (existing == null) continue;
-
+/*
                 if (existing.getQuestionType() != QuestionType.AI) {
                     // AI가 아닌 경우에만 질문 수정 허용
                     existing.setQuestion(item.getQuestion());
                 }
+*/
 
+                existing.setQuestion(item.getQuestion());
                 // 답변은 항상 수정 가능
                 existing.setAnswer(item.getAnswer());
                 existing.setShow(item.isShow());
