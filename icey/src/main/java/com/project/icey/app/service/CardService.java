@@ -18,6 +18,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Random;
 
+import static com.project.icey.app.domain.AccessoryType.동물;
+
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -208,7 +210,7 @@ public class CardService {
         init.setHobby("독서");
         init.setSecretTip("사실 수면 시간이 12시간이에요");
         init.setTmi("소싯적 휘파람 챔피언(교정하고 몰락함)");
-        init.setAccessory("crown");
+        init.setAccessory(동물);
 
         Card tpl = toEntity(init);
         tpl.setUser(user);

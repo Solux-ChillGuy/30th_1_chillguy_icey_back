@@ -51,8 +51,9 @@ public class Card {
     @Column(name = "PROFILE_COLOR", length = 20)
     private String profileColor; // 템플릿은 null, 팀카드만 색상
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "ACCESSORY", length = 30)
-    private String accessory;
+    private AccessoryType accessory;
 
     @Column(name = "NICKNAME", length = 60)
     private String nickname;
@@ -74,7 +75,7 @@ public class Card {
     private Card(User user, Team team, Card origin,
                  String adjective, String animal, String mbti,
                  String hobby, String secretTip, String tmi,
-                 String profileColor, String accessory) {
+                 String profileColor, AccessoryType accessory) {
         this.user = user;
         this.team = team;
         this.origin = origin;

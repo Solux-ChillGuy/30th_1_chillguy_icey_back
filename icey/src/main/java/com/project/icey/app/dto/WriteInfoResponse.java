@@ -1,5 +1,6 @@
 package com.project.icey.app.dto;
 
+import com.project.icey.app.domain.AccessoryType;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -23,7 +24,7 @@ public class WriteInfoResponse {
         private String nickname;
         private String animal;
         private String profileColor;
-        private String accessory;
+        private AccessoryType accessory;
         private String mbti;
         private String hobby;
         private String secretTip;
