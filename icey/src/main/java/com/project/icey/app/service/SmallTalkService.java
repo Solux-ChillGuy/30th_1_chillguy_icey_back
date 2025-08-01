@@ -50,6 +50,7 @@ public class SmallTalkService {
                 target,
                 purpose,
                 resDto.getTitle(),
+                0,
                 allDtos
         );
     }
@@ -63,6 +64,10 @@ public class SmallTalkService {
         list.setTarget(request.getTarget());
         list.setPurpose(request.getPurpose());
         list.setTitle(request.getTitle());
+        list.setChange_time(
+                request.getChange_time() != null ? request.getChange_time() : 0
+        );
+
 
         for (SmallTalkDto dto : request.getSmallTalks()) {
             validateQuestionNotNull(dto.getQuestion());
@@ -88,8 +93,6 @@ public class SmallTalkService {
 
         return listRepository.save(list);
     }
-
-
 
 
     public SmallTalkListDto getSmallTalkList(Long listId, User user) {
@@ -211,6 +214,7 @@ public class SmallTalkService {
         dto.setPurpose(entity.getPurpose());
         dto.setTitle(entity.getTitle());
         dto.setCreatedAt(entity.getCreatedAt());
+        dto.setChange_time(entity.getChange_time() != null ? entity.getChange_time() : 0);
         dto.setSmallTalks(entity.getSmallTalks().stream().map(st -> {
             SmallTalkDto d = new SmallTalkDto();
             d.setId(st.getId());

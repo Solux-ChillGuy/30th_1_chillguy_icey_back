@@ -22,5 +22,6 @@ public class SmallTalkEditRequest {
         private String answer;        // 수정된 답변
         private QuestionType questionType;
         private boolean show;
+        private Integer change_time;
     }
 }
