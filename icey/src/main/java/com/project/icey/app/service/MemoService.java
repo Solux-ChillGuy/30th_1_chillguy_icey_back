@@ -146,7 +146,7 @@ public class MemoService {
                 .map(r -> {
                     Card c = cardRepo.findByUserAndTeam(r.getUser(), team)
                             .orElseThrow(() -> new CoreApiException(ErrorCode.CARD_NOT_FOUND));
-                    return new LikeUser(c.getProfileColor(), c.getAnimal());
+                    return new LikeUser(c.getProfileColor(), c.getAnimal(),c.getAccessory());
                 })
                 .toList();
 
