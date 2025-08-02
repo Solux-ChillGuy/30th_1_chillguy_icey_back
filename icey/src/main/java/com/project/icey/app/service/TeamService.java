@@ -34,6 +34,7 @@ public class TeamService {
     private final ScheduleRepository scheduleRepository;
     private final CardService cardService;
     private final ScheduleVoteRepository scheduleVoteRepository;
+    private final MemoService memoService; //첫 메모 추가용
 
 
     @Value("${app.frontEndBaseUrl}")
@@ -57,6 +58,18 @@ public class TeamService {
 
         //사용자가 팀 생성과 동시에 팀 관련 명함이 생성될 수 있도록
         cardService.ensureMyCard(team.getTeamId(), creator);
+
+
+        //팀 생성과 동시에 첫 메모를 추가(팀장이 만든 걸로 처리)
+        MemoRequest welcomeMemo = new MemoRequest();
+        welcomeMemo.setContent(
+                "팀페이지에서 팀원에게 쪽지를 보내보세요!\n\n" +
+                        "내 명함을 커스텀 해보세요!\n\n" +
+                        "1. 기분 좋아지는 말 쪽지하기\n" +
+                        "2. 만났을 때 나를 알아볼 수 있는 쪽지 보내기"
+        );
+        memoService.create(team.getTeamId(), welcomeMemo, creator);
+
 
         //int memberCnt = userteamRepository.countByTeam(team);
         long days = Duration.between(LocalDateTime.now(), team.getExpiration()).toDays();
