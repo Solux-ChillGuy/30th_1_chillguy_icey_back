@@ -22,6 +22,7 @@ public class SmallTalk {
     private String tip;
     private String answer; // 사용자가 작성하는 답변
 
+    @Enumerated(EnumType.STRING)
     private QuestionType questionType;
 
     @Column(name = "is_show", nullable = false)
