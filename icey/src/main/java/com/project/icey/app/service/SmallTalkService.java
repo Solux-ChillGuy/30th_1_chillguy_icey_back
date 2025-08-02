@@ -29,7 +29,6 @@ public class SmallTalkService {
     private final SmallTalkGeneratorService smallTalkGeneratorService;
 
 
-
     // 리스트 생성만 (DB 저장 안 함)
     public SmallTalkListDto previewSmallTalkList(User user, String target, String purpose) {
         SmallTalkResponse resDto = smallTalkGeneratorService.generateSmallTalkWithTitle(target, purpose);
@@ -54,7 +53,6 @@ public class SmallTalkService {
                 allDtos
         );
     }
-
 
 
     // 사용자가 "저장" 눌렀을 때 실제 저장
@@ -116,6 +114,8 @@ public class SmallTalkService {
                 .collect(Collectors.toMap(SmallTalk::getId, Function.identity()));
 
         for (SmallTalkEditRequest.EditItem item : edits) {
+            if (item == null) continue;
+
             if (item.getId() == null) {
                 // 새로 추가
                 SmallTalk newTalk = new SmallTalk();
@@ -144,7 +144,6 @@ public class SmallTalkService {
         }
         listRepository.save(list);
     }
-
 
 
     @Transactional
@@ -235,6 +234,7 @@ public class SmallTalkService {
         SmallTalk current = smallTalkRepository.findById(talkId)
                 .orElseThrow(() -> new CoreApiException(ErrorCode.RESOURCE_NOT_FOUND));
 
+        // 이미 비활성화된 항목은 다시 swap 불가
         if (!current.isShow()) {
             throw new CoreApiException(ErrorCode.INVALID_REQUEST);
         }
@@ -242,13 +242,21 @@ public class SmallTalkService {
         SmallTalkList list = current.getSmallTalkList();
         validateOwner(list.getUser(), user);
 
+        // 후보: 아직 보여진 적 없는 항목만 가능
         SmallTalk replacement = list.getSmallTalks().stream()
-                .filter(t -> !t.getId().equals(current.getId()) && !t.isShow())
+                .filter(t -> !t.getId().equals(current.getId())        // 본인 제외
+                        && !t.isShow()                               // 현재 비활성화 상태
+                        && !t.isWasShown())                          // 과거에 보여진 적 없음
                 .findFirst()
                 .orElseThrow(() -> new CoreApiException(ErrorCode.RESOURCE_NOT_FOUND));
 
+        // 현재 항목 비활성화 + wasShown 기록
         current.setShow(false);
+        current.setWasShown(true);
+
+        // 새 항목 활성화 + wasShown 기록
         replacement.setShow(true);
+        replacement.setWasShown(true);
 
         return new SwapResponse(current.getId(), replacement.getId());
     }

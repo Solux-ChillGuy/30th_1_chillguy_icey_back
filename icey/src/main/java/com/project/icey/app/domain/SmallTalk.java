@@ -27,6 +27,9 @@ public class SmallTalk {
     @Column(name = "is_show", nullable = false)
     private boolean show;
 
+    @Column(nullable = false)
+    private boolean wasShown = false;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "small_talk_list_id")
     private SmallTalkList smallTalkList;
